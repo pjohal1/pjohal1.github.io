@@ -1,730 +1,1248 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATH3030 · Multivariate Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap');
-  :root {
-    --dash-bg: var(--color-background-tertiary);
-    --card: var(--color-background-primary);
-    --card-border: var(--color-border-tertiary);
-    --text: var(--color-text-primary);
-    --muted: var(--color-text-secondary);
-    --hint: var(--color-text-tertiary);
-    --accent: #534AB7;
-    --accent-light: #EEEDFE;
-    --accent-text: #3C3489;
-    --green: #1D9E75;
-    --green-light: #E1F5EE;
-    --amber: #BA7517;
-    --amber-light: #FAEEDA;
-    --coral: #993C1D;
-    --coral-light: #FAECE7;
-    --sans: 'Instrument Sans', sans-serif;
-    --serif: 'DM Serif Display', serif;
-    --mono: 'DM Mono', monospace;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--sans); background: var(--dash-bg); color: var(--text); min-height: 100vh; }
-  .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
-  .sidebar { background: var(--card); border-right: 0.5px solid var(--card-border); padding: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
-  .sidebar-header { padding: 20px 18px 14px; border-bottom: 0.5px solid var(--card-border); }
-  .sidebar-header .module-tag { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--accent); background: var(--accent-light); padding: 2px 7px; border-radius: 4px; display: inline-block; margin-bottom: 6px; letter-spacing: 0.04em; }
-  .sidebar-header h1 { font-family: var(--serif); font-size: 17px; color: var(--text); line-height: 1.25; font-weight: 400; }
-  .sidebar-search { padding: 10px 12px; border-bottom: 0.5px solid var(--card-border); }
-  .sidebar-search input { width: 100%; padding: 6px 10px; border-radius: 6px; border: 0.5px solid var(--card-border); background: var(--color-background-secondary); font-size: 12px; font-family: var(--sans); color: var(--text); outline: none; }
-  .sidebar-search input:focus { border-color: var(--accent); }
-  .nav-section { padding: 8px 0; border-bottom: 0.5px solid var(--card-border); }
-  .nav-section-title { font-size: 10px; font-weight: 600; color: var(--hint); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 18px 4px; }
-  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 18px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.12s; border-left: 2px solid transparent; }
-  .nav-item:hover { color: var(--text); background: var(--color-background-secondary); }
-  .nav-item.active { color: var(--accent-text); background: var(--accent-light); border-left-color: var(--accent); font-weight: 500; }
-  .nav-item .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .nav-item .check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--card-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 9px; cursor: pointer; transition: all 0.15s; }
-  .nav-item .check.done { background: var(--green); border-color: var(--green); color: white; }
-  .main { padding: 28px 32px 48px; max-width: 900px; }
-  .page { display: none; }
-  .page.active { display: block; }
-  .page-title { font-family: var(--serif); font-size: 30px; font-weight: 400; margin-bottom: 4px; }
-  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
-  .stat-card { background: var(--color-background-secondary); border-radius: 10px; padding: 14px 16px; }
-  .stat-card .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; letter-spacing: 0.03em; }
-  .stat-card .value { font-size: 26px; font-weight: 500; font-family: var(--mono); }
-  .stat-card .sub { font-size: 11px; color: var(--hint); margin-top: 2px; }
-  .card { background: var(--card); border: 0.5px solid var(--card-border); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
-  .card-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
-  .progress-row .label { width: 160px; flex-shrink: 0; color: var(--muted); }
-  .progress-bar { flex: 1; height: 5px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-  .progress-row .pct { width: 30px; text-align: right; color: var(--hint); font-family: var(--mono); font-size: 11px; }
-  .topic-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
-  .topic-card { background: var(--card); border: 0.5px solid var(--card-border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; position: relative; }
-  .topic-card:hover { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent); }
-  .topic-card.complete { border-color: var(--green); }
-  .topic-card .tc-num { font-family: var(--mono); font-size: 10px; color: var(--hint); margin-bottom: 4px; }
-  .topic-card .tc-name { font-size: 13px; font-weight: 500; margin-bottom: 6px; line-height: 1.3; }
-  .topic-card .tc-tags { display: flex; gap: 4px; flex-wrap: wrap; }
-  .tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
-  .tag-theory { background: var(--accent-light); color: var(--accent-text); }
-  .tag-exam { background: var(--coral-light); color: var(--coral); }
-  .tag-r { background: var(--green-light); color: var(--green); }
-  .tag-key { background: var(--amber-light); color: var(--amber); }
-  .tc-status { position: absolute; top: 12px; right: 12px; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--card-border); display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; transition: all 0.15s; }
-  .tc-status.done { background: var(--green); border-color: var(--green); color: white; }
-  .exam-item { border: 0.5px solid var(--card-border); border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; }
-  .exam-item .q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .exam-item .q-num { font-family: var(--mono); font-size: 11px; color: var(--hint); }
-  .exam-item .q-marks { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); background: var(--color-background-secondary); padding: 2px 8px; border-radius: 4px; }
-  .exam-item .q-text { font-size: 13px; line-height: 1.6; margin-bottom: 12px; color: var(--text); }
-  .exam-item .q-text .math { font-family: var(--mono); background: var(--color-background-secondary); padding: 0 4px; border-radius: 3px; font-size: 12px; }
-  .reveal-btn { font-size: 12px; color: var(--accent-text); cursor: pointer; background: var(--accent-light); border: none; padding: 5px 12px; border-radius: 6px; font-family: var(--sans); font-weight: 500; transition: all 0.12s; }
-  .reveal-btn:hover { background: #CECBF6; }
-  .solution { display: none; margin-top: 12px; padding: 12px 14px; background: var(--green-light); border-radius: 8px; font-size: 12px; line-height: 1.7; color: #085041; border-left: 3px solid var(--green); }
-  .solution.visible { display: block; }
-  .ai-box { border: 0.5px solid var(--card-border); border-radius: 10px; overflow: hidden; margin-top: 16px; }
-  .ai-input-row { display: flex; gap: 0; }
-  .ai-input-row textarea { flex: 1; border: none; outline: none; padding: 12px 14px; font-size: 13px; font-family: var(--sans); background: var(--card); resize: none; color: var(--text); min-height: 60px; }
-  .ai-send { background: var(--accent); color: white; border: none; padding: 0 16px; cursor: pointer; font-family: var(--sans); font-size: 12px; font-weight: 500; transition: background 0.12s; }
-  .ai-send:hover { background: var(--accent-text); }
-  .ai-response { padding: 14px; background: var(--color-background-secondary); font-size: 13px; line-height: 1.7; display: none; border-top: 0.5px solid var(--card-border); max-height: 320px; overflow-y: auto; }
-  .ai-response.visible { display: block; }
-  .ai-loading { color: var(--hint); font-style: italic; }
-  .formula-card { background: var(--card); border: 0.5px solid var(--card-border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
-  .formula-card .f-name { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .formula-card .f-math { font-family: var(--mono); font-size: 13px; background: var(--color-background-secondary); padding: 8px 12px; border-radius: 6px; line-height: 1.8; }
-  .formula-card .f-note { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
-  .flashcard-area { perspective: 800px; margin-bottom: 20px; }
-  .flashcard { width: 100%; height: 180px; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.5s; }
-  .flashcard.flipped { transform: rotateY(180deg); }
-  .flashcard-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px; border: 0.5px solid var(--card-border); display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; }
-  .flashcard-front { background: var(--card); }
-  .flashcard-back { background: var(--accent-light); transform: rotateY(180deg); }
-  .flashcard-front .q { font-size: 16px; font-weight: 500; line-height: 1.4; }
-  .flashcard-back .a { font-size: 14px; line-height: 1.6; color: var(--accent-text); font-weight: 400; }
-  .fc-nav { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); }
-  .fc-nav button { background: var(--color-background-secondary); border: 0.5px solid var(--card-border); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-family: var(--sans); font-size: 12px; transition: all 0.12s; color: var(--text); }
-  .fc-nav button:hover { background: var(--card); }
-  .week-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.12s; border: 0.5px solid transparent; margin: 3px; }
-  .week-chip:hover { border-color: var(--accent); }
-  .week-chip.wk-done { background: var(--green-light); color: var(--green); }
-  .week-chip.wk-progress { background: var(--amber-light); color: var(--amber); }
-  .week-chip.wk-todo { background: var(--color-background-secondary); color: var(--muted); }
-  .heatmap { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
-  .heat-cell { height: 24px; border-radius: 4px; cursor: pointer; transition: all 0.15s; position: relative; }
-  .heat-cell:hover { transform: scale(1.15); }
-  .heat-0 { background: var(--color-background-secondary); }
-  .heat-1 { background: #9FE1CB; }
-  .heat-2 { background: #5DCAA5; }
-  .heat-3 { background: #1D9E75; }
-  .heat-4 { background: #0F6E56; }
-  .divider { height: 0.5px; background: var(--card-border); margin: 20px 0; }
-  .badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
-  .badge-new { background: var(--coral-light); color: var(--coral); }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f6f2;--card:#ffffff;--border:#e8e6df;--text:#1a1916;--muted:#6b6960;--hint:#a8a59c;
+  --accent:#534AB7;--accent-l:#EEEDFE;--accent-t:#3C3489;
+  --green:#1D9E75;--green-l:#E1F5EE;--green-t:#085041;
+  --amber:#BA7517;--amber-l:#FAEEDA;--amber-t:#633806;
+  --coral:#993C1D;--coral-l:#FAECE7;--coral-t:#4A1B0C;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-t:#042C53;
+  --sans:'Instrument Sans',sans-serif;
+  --serif:'DM Serif Display',serif;
+  --mono:'DM Mono',monospace;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+a{color:var(--accent);text-decoration:none}
+.layout{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{background:var(--card);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;flex-shrink:0}
+.sb-header{padding:22px 18px 16px;border-bottom:1px solid var(--border)}
+.sb-tag{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--accent);background:var(--accent-l);padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:8px;letter-spacing:.05em}
+.sb-title{font-family:var(--serif);font-size:18px;line-height:1.2;color:var(--text);font-weight:400}
+.sb-search{padding:10px 12px;border-bottom:1px solid var(--border)}
+.sb-search input{width:100%;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:#fafaf8;font-size:12px;font-family:var(--sans);color:var(--text);outline:none}
+.sb-search input:focus{border-color:var(--accent)}
+.nav-sec{padding:6px 0;border-bottom:1px solid var(--border)}
+.nav-sec-title{font-size:10px;font-weight:600;color:var(--hint);letter-spacing:.07em;text-transform:uppercase;padding:4px 18px 2px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 18px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .1s;border-left:2px solid transparent;user-select:none}
+.nav-item:hover{color:var(--text);background:#fafaf8}
+.nav-item.active{color:var(--accent-t);background:var(--accent-l);border-left-color:var(--accent);font-weight:500}
+.nav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.chk{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;cursor:pointer;transition:all .15s;color:transparent;margin-left:auto}
+.chk.done{background:var(--green);border-color:var(--green);color:#fff}
+
+/* MAIN */
+.main{padding:32px 36px 64px;max-width:960px}
+.page{display:none}
+.page.active{display:block}
+.pg-title{font-family:var(--serif);font-size:32px;font-weight:400;margin-bottom:4px}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.card+.card{margin-top:0}
+
+/* STAT CARDS */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.stat{background:#f0efe9;border-radius:10px;padding:14px 16px}
+.stat .lbl{font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:500;letter-spacing:.03em}
+.stat .val{font-size:26px;font-weight:500;font-family:var(--mono)}
+.stat .sub{font-size:11px;color:var(--hint);margin-top:2px}
+
+/* PROGRESS */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12px}
+.prog-lbl{width:200px;flex-shrink:0;color:var(--muted)}
+.prog-bar{flex:1;height:5px;background:#f0efe9;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s}
+.prog-pct{width:32px;text-align:right;color:var(--hint);font-family:var(--mono);font-size:11px}
+
+/* TOPIC GRID */
+.topic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:0}
+.tc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 16px 14px;cursor:pointer;transition:all .15s;position:relative}
+.tc:hover{border-color:var(--accent)}
+.tc.done{border-color:var(--green)}
+.tc-num{font-family:var(--mono);font-size:10px;color:var(--hint);margin-bottom:4px}
+.tc-name{font-size:13px;font-weight:500;margin-bottom:8px;line-height:1.3;padding-right:24px}
+.tc-tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500}
+.tag-theory{background:var(--accent-l);color:var(--accent-t)}
+.tag-exam{background:var(--coral-l);color:var(--coral-t)}
+.tag-key{background:var(--amber-l);color:var(--amber-t)}
+.tag-r{background:var(--green-l);color:var(--green-t)}
+.tc-status{position:absolute;top:14px;right:14px;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;transition:all .15s}
+.tc-status.done{background:var(--green);border-color:var(--green);color:#fff}
+
+/* WEEKS */
+.wk-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .12s;border:1px solid transparent;margin:3px}
+.wk-chip:hover{border-color:var(--accent)}
+.wk-done{background:var(--green-l);color:var(--green)}
+.wk-progress{background:var(--amber-l);color:var(--amber)}
+.wk-todo{background:#f0efe9;color:var(--muted)}
+
+/* DEFINITION BOXES */
+.def-box{background:var(--accent-l);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px}
+.def-box .def-label{font-size:10px;font-weight:600;color:var(--accent-t);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.def-box .def-text{font-size:13px;line-height:1.7;color:var(--accent-t)}
+
+.formula-box{background:#fafaf8;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px}
+.formula-box .f-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.formula-box .f-math{font-family:var(--mono);font-size:13px;line-height:2;color:var(--text)}
+.formula-box .f-note{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+
+.example-box{background:var(--green-l);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px}
+.example-box .ex-label{font-size:10px;font-weight:600;color:var(--green-t);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.example-box .ex-text{font-size:13px;line-height:1.7;color:var(--green-t)}
+.example-box .ex-math{font-family:var(--mono);font-size:12px;line-height:1.9;margin-top:6px;color:var(--green-t)}
+
+.warn-box{background:var(--amber-l);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:14px}
+.warn-box .w-label{font-size:10px;font-weight:600;color:var(--amber-t);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.warn-box .w-text{font-size:13px;line-height:1.7;color:var(--amber-t)}
+
+/* CHECKLIST */
+.checklist{list-style:none;padding:0}
+.checklist li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.5}
+.checklist li:last-child{border-bottom:none}
+.checklist li .ci{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
+.checklist li .ci.done{background:var(--green);border-color:var(--green);color:#fff}
+.checklist li span{flex:1}
+.checklist li strong{color:var(--text);font-weight:500}
+
+/* EXAM */
+.exam-item{border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.q-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.q-marks{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);background:#f0efe9;padding:2px 8px;border-radius:4px}
+.q-text{font-size:13px;line-height:1.7;margin-bottom:12px;color:var(--text)}
+.reveal-btn{font-size:12px;color:var(--accent-t);cursor:pointer;background:var(--accent-l);border:none;padding:6px 14px;border-radius:6px;font-family:var(--sans);font-weight:500;transition:all .12s}
+.reveal-btn:hover{background:#CECBF6}
+.solution{display:none;margin-top:12px;padding:14px 16px;background:var(--green-l);border-radius:8px;font-size:13px;line-height:1.7;color:var(--green-t);border-left:3px solid var(--green)}
+.solution .sol-math{font-family:var(--mono);font-size:12px;line-height:1.9;margin:6px 0}
+.solution.visible{display:block}
+
+/* FLASHCARDS */
+.fc-area{perspective:900px;margin-bottom:20px}
+.fc{width:100%;height:200px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform .5s}
+.fc.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:28px;text-align:center;flex-direction:column;gap:8px}
+.fc-front{background:var(--card)}
+.fc-back{background:var(--accent-l);transform:rotateY(180deg)}
+.fc-front .q{font-size:16px;font-weight:500;line-height:1.4}
+.fc-back .a{font-size:13px;line-height:1.7;color:var(--accent-t)}
+.fc-back .a-math{font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--accent);margin-top:6px}
+.fc-hint{font-size:11px;color:var(--hint)}
+.fc-nav{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+.fc-nav button{background:#f0efe9;border:1px solid var(--border);border-radius:7px;padding:7px 16px;cursor:pointer;font-family:var(--sans);font-size:12px;transition:all .12s;color:var(--text)}
+.fc-nav button:hover{background:var(--card)}
+.fc-topic-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.fc-topic-filter button{font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:#f0efe9;cursor:pointer;font-family:var(--sans);color:var(--muted);transition:all .12s}
+.fc-topic-filter button.active{background:var(--accent-l);color:var(--accent-t);border-color:var(--accent)}
+
+/* FORMULA SHEET */
+.formula-section{margin-bottom:28px}
+.formula-section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* KEYS LIST */
+ul.keys{padding-left:0;list-style:none}
+ul.keys li{font-size:13px;color:var(--muted);line-height:1.8;padding:3px 0;display:flex;gap:8px}
+ul.keys li::before{content:"·";color:var(--accent);flex-shrink:0}
+ul.keys li strong{color:var(--text);font-weight:500}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:20px 0}
+.badge-new{font-size:10px;background:var(--coral-l);color:var(--coral-t);padding:1px 6px;border-radius:4px;font-weight:500;margin-left:auto}
+
+/* STEP LIST */
+ol.steps{padding-left:0;list-style:none;counter-reset:step}
+ol.steps li{counter-increment:step;display:flex;gap:12px;margin-bottom:10px;font-size:13px;color:var(--muted);line-height:1.6}
+ol.steps li::before{content:counter(step);width:22px;height:22px;border-radius:50%;background:var(--accent-l);color:var(--accent-t);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+ol.steps li strong{color:var(--text);font-weight:500}
+
+@media(max-width:700px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:relative;height:auto}
+  .grid3{grid-template-columns:1fr 1fr}
+  .topic-grid{grid-template-columns:1fr}
+}
 </style>
-
+</head>
+<body>
 <div class="layout">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="module-tag">MATH3030</div>
-      <h1>Multivariate<br>Analysis</h1>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-header">
+    <div class="sb-tag">MATH3030</div>
+    <div class="sb-title">Multivariate<br>Analysis</div>
+  </div>
+  <div class="sb-search">
+    <input type="text" placeholder="Search topics…" oninput="filterNav(this.value)">
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Overview</div>
+    <div class="nav-item active" onclick="goto('dashboard')">
+      <span style="font-size:14px">◻</span> Dashboard
     </div>
-    <div class="sidebar-search">
-      <input type="text" placeholder="Search topics..." id="search-inp" oninput="filterNav(this.value)">
+    <div class="nav-item" onclick="goto('tracker')">
+      <span style="font-size:14px">◈</span> Topic tracker
     </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Overview</div>
-      <div class="nav-item active" onclick="goto('dashboard')">
-        <span style="font-size:14px">◻</span> Dashboard
-      </div>
-      <div class="nav-item" onclick="goto('tracker')">
-        <span style="font-size:14px">◈</span> Topic tracker
-      </div>
-      <div class="nav-item" onclick="goto('formulas')">
-        <span style="font-size:14px">∑</span> Formula sheet
-      </div>
+    <div class="nav-item" onclick="goto('formulas')">
+      <span style="font-size:14px">∑</span> Formula sheet
     </div>
-    <div class="nav-section" id="topics-nav">
-      <div class="nav-section-title">Core topics</div>
-      <div class="nav-item" onclick="goto('pca')">
-        <div class="dot" style="background:#534AB7"></div>
-        <span style="flex:1">PCA</span>
-        <div class="check" id="chk-pca" onclick="event.stopPropagation();toggle('pca')"></div>
-      </div>
-      <div class="nav-item" onclick="goto('svd')">
-        <div class="dot" style="background:#1D9E75"></div>
-        <span style="flex:1">SVD</span>
-        <div class="check" id="chk-svd" onclick="event.stopPropagation();toggle('svd')"></div>
-      </div>
-      <div class="nav-item" onclick="goto('mvn')">
-        <div class="dot" style="background:#D85A30"></div>
-        <span style="flex:1">Multivariate Normal</span>
-        <div class="check" id="chk-mvn" onclick="event.stopPropagation();toggle('mvn')"></div>
-      </div>
-      <div class="nav-item" onclick="goto('hotelling')">
-        <div class="dot" style="background:#BA7517"></div>
-        <span style="flex:1">Hotelling's T²</span>
-        <div class="check" id="chk-hotelling" onclick="event.stopPropagation();toggle('hotelling')"></div>
-      </div>
-      <div class="nav-item" onclick="goto('lda')">
-        <div class="dot" style="background:#D4537E"></div>
-        <span style="flex:1">Discriminant Analysis</span>
-        <div class="check" id="chk-lda" onclick="event.stopPropagation();toggle('lda')"></div>
-      </div>
-      <div class="nav-item" onclick="goto('mds')">
-        <div class="dot" style="background:#378ADD"></div>
-        <span style="flex:1">MDS</span>
-        <div class="check" id="chk-mds" onclick="event.stopPropagation();toggle('mds')"></div>
-      </div>
-      <div class="nav-item" onclick="goto('cluster')">
-        <div class="dot" style="background:#639922"></div>
-        <span style="flex:1">Cluster Analysis</span>
-        <div class="check" id="chk-cluster" onclick="event.stopPropagation();toggle('cluster')"></div>
-      </div>
-      <div class="nav-item" onclick="goto('cca')">
-        <div class="dot" style="background:#5DCAA5"></div>
-        <span style="flex:1">Canonical Correlation</span>
-        <div class="check" id="chk-cca" onclick="event.stopPropagation();toggle('cca')"></div>
-      </div>
+    <div class="nav-item" onclick="goto('checklist')">
+      <span style="font-size:14px">☑</span> Exam checklist
     </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Exam prep</div>
-      <div class="nav-item" onclick="goto('exam24')">
-        <span style="font-size:12px">📄</span> Exam 2024–25 <span class="badge badge-new" style="margin-left:auto">new</span>
-      </div>
-      <div class="nav-item" onclick="goto('exam23')">
-        <span style="font-size:12px">📄</span> Exam 2023–24
-      </div>
-      <div class="nav-item" onclick="goto('flashcards')">
-        <span style="font-size:12px">🃏</span> Flashcards
-      </div>
-      <div class="nav-item" onclick="goto('askai')">
-        <span style="font-size:12px">✦</span> Ask AI
-      </div>
+  </div>
+  <div class="nav-sec" id="topics-nav">
+    <div class="nav-sec-title">Core topics</div>
+    <div class="nav-item" onclick="goto('pca')">
+      <div class="nav-dot" style="background:#534AB7"></div>
+      <span style="flex:1">PCA</span>
+      <div class="chk" id="chk-pca" onclick="event.stopPropagation();toggle('pca')"></div>
     </div>
-  </aside>
+    <div class="nav-item" onclick="goto('svd')">
+      <div class="nav-dot" style="background:#1D9E75"></div>
+      <span style="flex:1">SVD</span>
+      <div class="chk" id="chk-svd" onclick="event.stopPropagation();toggle('svd')"></div>
+    </div>
+    <div class="nav-item" onclick="goto('mvn')">
+      <div class="nav-dot" style="background:#D85A30"></div>
+      <span style="flex:1">Multivariate Normal</span>
+      <div class="chk" id="chk-mvn" onclick="event.stopPropagation();toggle('mvn')"></div>
+    </div>
+    <div class="nav-item" onclick="goto('wishart')">
+      <div class="nav-dot" style="background:#BA7517"></div>
+      <span style="flex:1">Wishart & Hotelling</span>
+      <div class="chk" id="chk-wishart" onclick="event.stopPropagation();toggle('wishart')"></div>
+    </div>
+    <div class="nav-item" onclick="goto('inference')">
+      <div class="nav-dot" style="background:#639922"></div>
+      <span style="flex:1">Inference (1 & 2 sample)</span>
+      <div class="chk" id="chk-inference" onclick="event.stopPropagation();toggle('inference')"></div>
+    </div>
+    <div class="nav-item" onclick="goto('lda')">
+      <div class="nav-dot" style="background:#D4537E"></div>
+      <span style="flex:1">Discriminant Analysis</span>
+      <div class="chk" id="chk-lda" onclick="event.stopPropagation();toggle('lda')"></div>
+    </div>
+    <div class="nav-item" onclick="goto('mds')">
+      <div class="nav-dot" style="background:#378ADD"></div>
+      <span style="flex:1">MDS</span>
+      <div class="chk" id="chk-mds" onclick="event.stopPropagation();toggle('mds')"></div>
+    </div>
+    <div class="nav-item" onclick="goto('cluster')">
+      <div class="nav-dot" style="background:#3B6D11"></div>
+      <span style="flex:1">Cluster Analysis</span>
+      <div class="chk" id="chk-cluster" onclick="event.stopPropagation();toggle('cluster')"></div>
+    </div>
+    <div class="nav-item" onclick="goto('cca')">
+      <div class="nav-dot" style="background:#0F6E56"></div>
+      <span style="flex:1">Canonical Correlation</span>
+      <div class="chk" id="chk-cca" onclick="event.stopPropagation();toggle('cca')"></div>
+    </div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-sec-title">Exam prep</div>
+    <div class="nav-item" onclick="goto('exam25')">
+      <span style="font-size:12px">📄</span> Exam 2024–25 <span class="badge-new">new</span>
+    </div>
+    <div class="nav-item" onclick="goto('exam24')">
+      <span style="font-size:12px">📄</span> Exam 2023–24
+    </div>
+    <div class="nav-item" onclick="goto('flashcards')">
+      <span style="font-size:12px">🃏</span> Flashcards
+    </div>
+  </div>
+</aside>
 
-  <main class="main" id="main-scroll">
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-title">Dashboard</div>
-      <div class="page-sub">Spring 2024/25 · Prof. Richard Wilkinson · 20 credits</div>
-      <div class="grid-3">
-        <div class="stat-card">
-          <div class="label">Topics mastered</div>
-          <div class="value" id="stat-done">0/10</div>
-          <div class="sub">mark complete in sidebar</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Exam coverage</div>
-          <div class="value">3</div>
-          <div class="sub">past papers available</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Exam weight</div>
-          <div class="value">80%</div>
-          <div class="sub">3 hour written exam</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Topic progress</div>
-        <div id="progress-rows"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Syllabus weeks</div>
-        <div style="display:flex;flex-wrap:wrap;margin:-3px">
-          <div class="week-chip wk-done" onclick="goto('pca')">Wk 1 · Intro & Linear Algebra</div>
-          <div class="week-chip wk-done" onclick="goto('pca')">Wk 2 · PCA I</div>
-          <div class="week-chip wk-progress" onclick="goto('pca')">Wk 3 · PCA II + SVD</div>
-          <div class="week-chip wk-progress" onclick="goto('cca')">Wk 4 · Canonical Correlation</div>
-          <div class="week-chip wk-todo" onclick="goto('mds')">Wk 5 · MDS</div>
-          <div class="week-chip wk-todo" onclick="goto('mvn')">Wk 6 · MVN distribution</div>
-          <div class="week-chip wk-todo" onclick="goto('hotelling')">Wk 7 · Wishart + Hotelling</div>
-          <div class="week-chip wk-todo" onclick="goto('mvn')">Wk 8 · Inference (1 & 2 samples)</div>
-          <div class="week-chip wk-todo" onclick="goto('lda')">Wk 9 · Discriminant Analysis</div>
-          <div class="week-chip wk-todo" onclick="goto('cluster')">Wk 10 · Cluster Analysis</div>
-        </div>
-        <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--muted)">
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green-light);border:1px solid var(--green);margin-right:4px"></span>Done</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--amber-light);border:1px solid var(--amber);margin-right:4px"></span>In progress</span>
-          <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--color-background-secondary);border:1px solid var(--card-border);margin-right:4px"></span>Upcoming</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Assessment</div>
-        <div style="font-size:13px;line-height:1.8;color:var(--muted)">
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--card-border)"><span>3-hour written examination</span><span style="font-family:var(--mono);color:var(--text)">80%</span></div>
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--card-border)"><span>Coursework / R project report</span><span style="font-family:var(--mono);color:var(--text)">20%</span></div>
-          <div style="padding:8px 0 2px;font-size:12px">Office hours: Tuesdays 3–4pm, C19 or online · <a href="mailto:richard.wilkinson@nottingham.ac.uk" style="color:var(--accent-text)">richard.wilkinson@nottingham.ac.uk</a></div>
-        </div>
-      </div>
-    </div>
+<!-- MAIN -->
+<main class="main" id="main-scroll">
 
-    <!-- TRACKER -->
-    <div class="page" id="page-tracker">
-      <div class="page-title">Topic tracker</div>
-      <div class="page-sub">Click a topic to study it · tick to mark complete</div>
-      <div class="topic-grid" id="topic-grid"></div>
+<!-- ===== DASHBOARD ===== -->
+<div class="page active" id="page-dashboard">
+  <div class="pg-title">Dashboard</div>
+  <div class="pg-sub">Spring 2024/25 · Prof. Richard Wilkinson · 20 credits · Tuesday 4–6pm + Thursday 11am–1pm</div>
+  <div class="grid3">
+    <div class="stat"><div class="lbl">Topics mastered</div><div class="val" id="stat-done">0/9</div><div class="sub">tick topics in sidebar</div></div>
+    <div class="stat"><div class="lbl">Exam weight</div><div class="val">80%</div><div class="sub">3-hour written exam</div></div>
+    <div class="stat"><div class="lbl">Coursework</div><div class="val">20%</div><div class="sub">R data analysis report</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Topic progress</div>
+    <div id="progress-rows"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Weekly syllabus</div>
+    <div style="display:flex;flex-wrap:wrap;margin:-3px">
+      <div class="wk-chip wk-done" onclick="goto('pca')">Wk 1 · Intro &amp; Linear Algebra</div>
+      <div class="wk-chip wk-done" onclick="goto('pca')">Wk 2 · PCA I</div>
+      <div class="wk-chip wk-progress" onclick="goto('svd')">Wk 3 · PCA II &amp; SVD</div>
+      <div class="wk-chip wk-progress" onclick="goto('cca')">Wk 4 · Canonical Correlation</div>
+      <div class="wk-chip wk-todo" onclick="goto('mds')">Wk 5 · MDS</div>
+      <div class="wk-chip wk-todo" onclick="goto('mvn')">Wk 6 · MVN Distribution</div>
+      <div class="wk-chip wk-todo" onclick="goto('wishart')">Wk 7 · Wishart &amp; Hotelling T²</div>
+      <div class="wk-chip wk-todo" onclick="goto('inference')">Wk 8 · Inference (1 &amp; 2 samples)</div>
+      <div class="wk-chip wk-todo" onclick="goto('lda')">Wk 9 · Discriminant Analysis</div>
+      <div class="wk-chip wk-todo" onclick="goto('cluster')">Wk 10 · Cluster Analysis</div>
     </div>
+    <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--muted)">
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green-l);border:1px solid var(--green);margin-right:4px;vertical-align:middle"></span>Done</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--amber-l);border:1px solid var(--amber);margin-right:4px;vertical-align:middle"></span>In progress</span>
+      <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f0efe9;border:1px solid var(--border);margin-right:4px;vertical-align:middle"></span>Upcoming</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Assessment &amp; contact</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.8">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>3-hour written examination</span><span style="font-family:var(--mono);color:var(--text)">80%</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span>Coursework / R project report</span><span style="font-family:var(--mono);color:var(--text)">20%</span></div>
+      <div style="padding:10px 0 4px">Office hours: Tuesdays 3–4pm, C19 or online · <a href="mailto:richard.wilkinson@nottingham.ac.uk">richard.wilkinson@nottingham.ac.uk</a></div>
+      <div style="font-size:12px">Resit by new exam only. Module resit replaces fail-range marks if higher.</div>
+    </div>
+  </div>
+</div>
 
-    <!-- FORMULAS -->
-    <div class="page" id="page-formulas">
-      <div class="page-title">Formula sheet</div>
-      <div class="page-sub">Key results from the MATH3030 formula sheet</div>
-      <div class="formula-card">
-        <div class="f-name">Multivariate Normal</div>
-        <div class="f-math">x ~ Nₚ(μ, Σ)<br>f(x) = (2π)^{-p/2} |Σ|^{-1/2} exp{-½(x-μ)ᵀΣ⁻¹(x-μ)}</div>
-        <div class="f-note">If y = Ax + c, then y ~ Nₚ(Aμ + c, AΣAᵀ)</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">Sample statistics</div>
-        <div class="f-math">x̄ = (1/n) Σᵢ xᵢ<br>S = (1/n) Σᵢ (xᵢ - x̄)(xᵢ - x̄)ᵀ</div>
-        <div class="f-note">Also acceptable with denominator n-1</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">Hotelling's T² (one sample)</div>
-        <div class="f-math">T² = n(x̄ - μ₀)ᵀ S⁻¹ (x̄ - μ₀) ~ T²(p, n-1)</div>
-        <div class="f-note">Under H₀: μ = μ₀ with x ~ Nₚ(μ, Σ)</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">Hotelling's T² (two sample)</div>
-        <div class="f-math">T² = (n+m-p-1)/((n+m-2)p) · nm/(n+m) · (ȳ-x̄)ᵀ Sp⁻¹ (ȳ-x̄) ~ F_{p, n+m-p-1}</div>
-        <div class="f-note">Sp = pooled covariance = (n·S₁ + m·S₂)/(n+m-2)</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">SVD decomposition</div>
-        <div class="f-math">X = UΔVᵀ where U, V orthogonal; Δ diagonal<br>(1/n) XᵀX = (1/n) VΔ²Vᵀ  →  eigenvalues λᵢ = δᵢ²/n</div>
-        <div class="f-note">Left singular vectors: U = XVΔ⁻¹</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">PCA scores</div>
-        <div class="f-math">zᵢ = vᵢᵀ(x - x̄)   (i-th PC score)</div>
-        <div class="f-note">Proportion variance explained by PC i: λᵢ / Σⱼ λⱼ</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">LDA discriminant rule</div>
-        <div class="f-math">Classify x to A if: aᵀ(x - h) > 0<br>a = Sp⁻¹(x̄A - x̄B),  h = ½(x̄A + x̄B)</div>
-        <div class="f-note">Bayes rule: classify to A if aᵀ(x-h) > log(πB/πA)</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">Wishart distribution</div>
-        <div class="f-math">nS ~ Wₚ(Σ, n-1)  (when xᵢ iid Nₚ(μ,Σ))</div>
-        <div class="f-note">x̄ and S are independent</div>
-      </div>
-      <div class="formula-card">
-        <div class="f-name">MDS stress criterion</div>
-        <div class="f-math">minimize Σᵢ Σⱼ (dᵢⱼ - d(zᵢ,zⱼ))²</div>
-        <div class="f-note">Classical MDS: B = -½ H D² H, take top-k eigenvectors</div>
-      </div>
-    </div>
+<!-- ===== TRACKER ===== -->
+<div class="page" id="page-tracker">
+  <div class="pg-title">Topic tracker</div>
+  <div class="pg-sub">Click a topic to study it · tick the circle to mark complete</div>
+  <div class="topic-grid" id="topic-grid"></div>
+</div>
 
-    <!-- PCA -->
-    <div class="page" id="page-pca">
-      <div class="page-title">Principal Component Analysis</div>
-      <div class="page-sub">Dimension reduction via variance maximisation</div>
-      <div class="card">
-        <div class="card-title"><span style="color:var(--accent)">●</span> Optimization problem</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          Find a ∈ ℝᵖ to maximize Var(aᵀx)<br>
-          subject to aᵀa = 1
-        </div>
-        <div style="font-size:13px;margin-top:10px;color:var(--muted);line-height:1.7">Solution is the eigenvector of Σ (or S) with largest eigenvalue. The k-th PC uses the k-th eigenvector.</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Key facts</div>
-        <div style="font-size:13px;line-height:1.9;color:var(--muted)">
-          <div>· PCs are uncorrelated (orthogonal loading vectors)</div>
-          <div>· Proportion of variance explained by PC<sub>i</sub> = λᵢ / Σλⱼ</div>
-          <div>· Usually use covariance matrix; use correlation matrix if variables are on different scales</div>
-          <div>· Score for individual x: zᵢ = vᵢᵀ(x − x̄)</div>
-        </div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT PCA</div>
-        <div class="ai-input-row">
-          <textarea id="ai-pca-q" placeholder="e.g. Why do we subtract the mean before computing PCA scores?"></textarea>
-          <button class="ai-send" onclick="askAI('pca-q','pca-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-pca-r"></div>
-      </div>
-    </div>
+<!-- ===== EXAM CHECKLIST ===== -->
+<div class="page" id="page-checklist">
+  <div class="pg-title">Exam checklist</div>
+  <div class="pg-sub">Everything you need to be able to do in the exam · tick as you go</div>
 
-    <!-- SVD -->
-    <div class="page" id="page-svd">
-      <div class="page-title">Singular Value Decomposition</div>
-      <div class="page-sub">Factorising a data matrix X = UΔVᵀ</div>
-      <div class="card">
-        <div class="card-title">Structure</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          X = U Δ Vᵀ<br>
-          U (n×p): left singular vectors<br>
-          Δ (p×p): diagonal, entries δ₁ ≥ δ₂ ≥ ... ≥ 0<br>
-          V (p×p): right singular vectors (eigenvectors of XᵀX)
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Connection to PCA</div>
-        <div style="font-size:13px;line-height:1.9;color:var(--muted)">
-          <div>· (1/n)XᵀX = (1/n)VΔ²Vᵀ → eigenvalues of covariance matrix = δᵢ²/n</div>
-          <div>· Right singular vectors V = PC loadings</div>
-          <div>· Recover U via U = XVΔ⁻¹</div>
-          <div>· Sign of uᵢ, vᵢ can be flipped — solution not unique</div>
-        </div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT SVD</div>
-        <div class="ai-input-row">
-          <textarea id="ai-svd-q" placeholder="e.g. How do I find the left singular vectors from scratch?"></textarea>
-          <button class="ai-send" onclick="askAI('svd-q','svd-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-svd-r"></div>
-      </div>
-    </div>
+  <div class="card">
+    <div class="card-title"><span style="color:#534AB7">●</span> PCA &amp; SVD</div>
+    <ul class="checklist" id="cl-pca"></ul>
+  </div>
+  <div class="card">
+    <div class="card-title"><span style="color:#D85A30">●</span> Multivariate Normal &amp; Wishart</div>
+    <ul class="checklist" id="cl-mvn"></ul>
+  </div>
+  <div class="card">
+    <div class="card-title"><span style="color:#639922">●</span> Inference</div>
+    <ul class="checklist" id="cl-inf"></ul>
+  </div>
+  <div class="card">
+    <div class="card-title"><span style="color:#D4537E">●</span> Discriminant Analysis</div>
+    <ul class="checklist" id="cl-lda"></ul>
+  </div>
+  <div class="card">
+    <div class="card-title"><span style="color:#378ADD">●</span> MDS &amp; Clustering</div>
+    <ul class="checklist" id="cl-mds"></ul>
+  </div>
+  <div class="card">
+    <div class="card-title"><span style="color:#0F6E56">●</span> Canonical Correlation Analysis</div>
+    <ul class="checklist" id="cl-cca"></ul>
+  </div>
+  <div style="margin-top:8px;text-align:right">
+    <button onclick="clearChecklist()" style="font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#f0efe9;cursor:pointer;font-family:var(--sans);color:var(--muted)">Reset all</button>
+  </div>
+</div>
 
-    <!-- MVN -->
-    <div class="page" id="page-mvn">
-      <div class="page-title">Multivariate Normal Distribution</div>
-      <div class="page-sub">Nₚ(μ, Σ) and its properties</div>
-      <div class="card">
-        <div class="card-title">Definition & properties</div>
-        <div style="font-size:13px;line-height:1.9;color:var(--muted)">
-          <div>· x ~ Nₚ(μ, Σ): mean vector μ, covariance matrix Σ (p.s.d.)</div>
-          <div>· Linear transformation: y = Ax + c ~ Nₚ(Aμ+c, AΣAᵀ)</div>
-          <div>· Standardising: set A = Σ⁻¹/², c = −Σ⁻¹/²μ → y ~ Nₚ(0, Iₚ)</div>
-          <div>· Marginals and conditionals of an MVN are also MVN</div>
-          <div>· x̄ ~ Nₚ(μ, Σ/n) for iid sample</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Chi-squared result</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          n(x̄ − μ)ᵀ Σ⁻¹ (x̄ − μ) ~ χ²ₚ
-        </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6">Proof: standardise → sum of squares of iid N(0,1) = χ²ₚ. Replace Σ with S to get Hotelling's T².</div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT MVN</div>
-        <div class="ai-input-row">
-          <textarea id="ai-mvn-q" placeholder="e.g. Explain why x̄ and S are independent for MVN data"></textarea>
-          <button class="ai-send" onclick="askAI('mvn-q','mvn-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-mvn-r"></div>
-      </div>
-    </div>
+<!-- ===== FORMULA SHEET ===== -->
+<div class="page" id="page-formulas">
+  <div class="pg-title">Formula sheet</div>
+  <div class="pg-sub">All key results — the exam provides a formula sheet, but you must know how to use these</div>
 
-    <!-- HOTELLING -->
-    <div class="page" id="page-hotelling">
-      <div class="page-title">Hotelling's T²</div>
-      <div class="page-sub">Multivariate hypothesis testing</div>
-      <div class="card">
-        <div class="card-title">One-sample test</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          H₀: μ = μ₀<br>
-          T² = n(x̄−μ₀)ᵀS⁻¹(x̄−μ₀) ~ T²(p, n−1)
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Two-sample test</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          H₀: μ₁ = μ₂  (assumes equal Σ)<br>
-          Sp = pooled covariance<br>
-          T² ~ F_{p, n₁+n₂−p−1}
-        </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px">Reject H₀ at level α if T² > F_{p, n+m-p-1, α}</div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT HOTELLING</div>
-        <div class="ai-input-row">
-          <textarea id="ai-hotelling-q" placeholder="e.g. How do I compute the pooled covariance matrix?"></textarea>
-          <button class="ai-send" onclick="askAI('hotelling-q','hotelling-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-hotelling-r"></div>
-      </div>
+  <div class="formula-section">
+    <div class="formula-section-title">Multivariate Normal</div>
+    <div class="formula-box">
+      <div class="f-label">Definition</div>
+      <div class="f-math">x ~ Nₚ(μ, Σ)<br>f(x) = (2π)^{-p/2} |Σ|^{-1/2} exp{ -½(x-μ)ᵀΣ⁻¹(x-μ) }</div>
+      <div class="f-note">Σ must be positive semi-definite. The quadratic form (x-μ)ᵀΣ⁻¹(x-μ) measures Mahalanobis distance.</div>
     </div>
+    <div class="formula-box">
+      <div class="f-label">Linear transformation</div>
+      <div class="f-math">y = Ax + c  ⟹  y ~ Nₚ(Aμ + c, AΣAᵀ)</div>
+      <div class="f-note">Standardising: set A = Σ^{-1/2}, c = -Σ^{-1/2}μ  ⟹  y ~ Nₚ(0, Iₚ)</div>
+    </div>
+    <div class="formula-box">
+      <div class="f-label">Sample mean distribution</div>
+      <div class="f-math">x̄ ~ Nₚ(μ, Σ/n)   for iid sample x₁,...,xₙ ~ Nₚ(μ,Σ)</div>
+    </div>
+    <div class="formula-box">
+      <div class="f-label">Chi-squared result</div>
+      <div class="f-math">n(x̄ - μ)ᵀ Σ⁻¹ (x̄ - μ) ~ χ²ₚ</div>
+      <div class="f-note">Proof: standardise → sum of p squared iid N(0,1) random variables.</div>
+    </div>
+  </div>
 
-    <!-- LDA -->
-    <div class="page" id="page-lda">
-      <div class="page-title">Discriminant Analysis</div>
-      <div class="page-sub">Linear (LDA) and Quadratic (QDA) rules</div>
-      <div class="card">
-        <div class="card-title">ML Discriminant rule (equal Σ)</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          Classify x to A if: aᵀ(x − h) &gt; 0<br>
-          a = Sp⁻¹(x̄A − x̄B)<br>
-          h = ½(x̄A + x̄B)
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Bayes rule (prior probabilities πA, πB)</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          Classify to A if: aᵀ(x−h) &gt; log(πB / πA)
-        </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px">If πA = πB the Bayes rule reduces to the ML rule. If covariance matrices differ, decision boundary is quadratic (QDA).</div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT LDA</div>
-        <div class="ai-input-row">
-          <textarea id="ai-lda-q" placeholder="e.g. Why does LDA give linear boundaries but QDA gives quadratic?"></textarea>
-          <button class="ai-send" onclick="askAI('lda-q','lda-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-lda-r"></div>
-      </div>
+  <div class="formula-section">
+    <div class="formula-section-title">Wishart &amp; Hotelling T²</div>
+    <div class="formula-box">
+      <div class="f-label">Wishart distribution</div>
+      <div class="f-math">nS ~ Wₚ(Σ, n-1)  when xᵢ iid Nₚ(μ, Σ)</div>
+      <div class="f-note">x̄ and S are independent. This is the multivariate analogue of the chi-squared distribution.</div>
     </div>
+    <div class="formula-box">
+      <div class="f-label">Hotelling's T² (one sample)</div>
+      <div class="f-math">T² = n(x̄ - μ₀)ᵀ S⁻¹ (x̄ - μ₀)  ~  T²(p, n-1)</div>
+      <div class="f-note">Under H₀: μ = μ₀. Equivalent to F_{p, n-p} after scaling.</div>
+    </div>
+    <div class="formula-box">
+      <div class="f-label">Hotelling's T² (two sample)</div>
+      <div class="f-math">T² = (n+m-p-1)/((n+m-2)·p) · nm/(n+m) · (ȳ-x̄)ᵀ Sₚ⁻¹ (ȳ-x̄)  ~  F_{p, n+m-p-1}<br><br>Sₚ = (n·S₁ + m·S₂) / (n+m-2)   (pooled covariance)</div>
+      <div class="f-note">Assumes equal covariance matrices Σ₁ = Σ₂.</div>
+    </div>
+  </div>
 
-    <!-- MDS -->
-    <div class="page" id="page-mds">
-      <div class="page-title">Multidimensional Scaling</div>
-      <div class="page-sub">Low-dimensional representation from distance matrices</div>
-      <div class="card">
-        <div class="card-title">Optimization problem</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          Find z₁,...,zₙ ∈ ℝᵏ to minimize<br>
-          Σᵢ Σⱼ (dᵢⱼ − ‖zᵢ − zⱼ‖)²
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Classical MDS algorithm</div>
-        <div style="font-size:13px;line-height:1.9;color:var(--muted)">
-          <div>1. Form A = −½D²  (elementwise squaring)</div>
-          <div>2. Double-centre: B = HAH where H = I − (1/n)11ᵀ</div>
-          <div>3. Eigendecompose B = VΛVᵀ</div>
-          <div>4. Take top-k eigenvalues/vectors: Z = V_k Λ_k^{1/2}</div>
-          <div>· Negative eigenvalues indicate distances are non-Euclidean</div>
-        </div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT MDS</div>
-        <div class="ai-input-row">
-          <textarea id="ai-mds-q" placeholder="e.g. What does the double-centring matrix H do geometrically?"></textarea>
-          <button class="ai-send" onclick="askAI('mds-q','mds-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-mds-r"></div>
-      </div>
+  <div class="formula-section">
+    <div class="formula-section-title">PCA &amp; SVD</div>
+    <div class="formula-box">
+      <div class="f-label">SVD decomposition</div>
+      <div class="f-math">X = U Δ Vᵀ   (U, V orthogonal; Δ diagonal, δ₁ ≥ δ₂ ≥ ... ≥ 0)<br>(1/n) XᵀX = (1/n) VΔ²Vᵀ   ⟹   eigenvalues λᵢ = δᵢ²/n</div>
+      <div class="f-note">Left singular vectors: U = XV Δ⁻¹. Sign of each uᵢ, vᵢ pair can be flipped.</div>
     </div>
+    <div class="formula-box">
+      <div class="f-label">PCA optimization &amp; scores</div>
+      <div class="f-math">Maximize Var(aᵀx)  subject to aᵀa = 1  ⟹  a = eigenvector of Σ<br>PC score for individual x:  zᵢ = vᵢᵀ(x - x̄)<br>Proportion variance explained by PCᵢ:  λᵢ / Σⱼ λⱼ</div>
+    </div>
+  </div>
 
-    <!-- CLUSTER -->
-    <div class="page" id="page-cluster">
-      <div class="page-title">Cluster Analysis</div>
-      <div class="page-sub">k-means and hierarchical methods</div>
-      <div class="card">
-        <div class="card-title">k-means objective</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          Minimise Σₖ Σ_{xᵢ∈Cₖ} ‖xᵢ − μ̂ₖ‖²<br>
-          where μ̂ₖ = (1/|Cₖ|) Σ_{i∈Cₖ} xᵢ
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Hierarchical clustering linkage methods</div>
-        <div style="font-size:13px;line-height:1.9;color:var(--muted)">
-          <div>· Single linkage: d(A,B) = min{d(a,b) : a∈A, b∈B}  — tends to chain</div>
-          <div>· Complete linkage: d(A,B) = max{d(a,b)} — tight, compact clusters</div>
-          <div>· Average linkage: d(A,B) = avg{d(a,b)} — compromise</div>
-          <div>· Ward's method: minimises within-cluster variance</div>
-        </div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT CLUSTERING</div>
-        <div class="ai-input-row">
-          <textarea id="ai-cluster-q" placeholder="e.g. How do I draw a dendrogram from a distance matrix by hand?"></textarea>
-          <button class="ai-send" onclick="askAI('cluster-q','cluster-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-cluster-r"></div>
-      </div>
+  <div class="formula-section">
+    <div class="formula-section-title">Discriminant Analysis</div>
+    <div class="formula-box">
+      <div class="f-label">ML discriminant rule (equal covariance)</div>
+      <div class="f-math">Classify x to A if:  aᵀ(x - h) &gt; 0<br>a = Sₚ⁻¹(x̄A - x̄B),    h = ½(x̄A + x̄B)</div>
     </div>
+    <div class="formula-box">
+      <div class="f-label">Bayes discriminant rule</div>
+      <div class="f-math">Classify x to A if:  aᵀ(x - h) &gt; log(πB / πA)</div>
+      <div class="f-note">πA, πB are prior probabilities. When πA = πB the rule reduces to the ML rule.</div>
+    </div>
+  </div>
 
-    <!-- CCA -->
-    <div class="page" id="page-cca">
-      <div class="page-title">Canonical Correlation Analysis</div>
-      <div class="page-sub">Finding maximally correlated linear combinations</div>
-      <div class="card">
-        <div class="card-title">Optimization problem</div>
-        <div style="font-family:var(--mono);font-size:13px;background:var(--color-background-secondary);padding:12px 14px;border-radius:8px;line-height:2;">
-          max_{a,b} Cor(aᵀy, bᵀz)<br>
-          Solution via SVD of Q = Var(y)^{-½} Cov(y,z) Var(z)^{-½}
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Canonical correlations from eigenvalues of Σ</div>
-        <div style="font-size:13px;line-height:1.9;color:var(--muted)">
-          <div>If Var(y) = RU(Λ+I)(RU)ᵀ and Var(z) = TU(Λ+I)(TU)ᵀ</div>
-          <div>then canonical correlations = λᵢ/(λᵢ + 1)</div>
-          <div>This result appeared in the 2023–24 exam, Q3(b).</div>
-        </div>
-      </div>
-      <div class="ai-box">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">ASK AI ABOUT CCA</div>
-        <div class="ai-input-row">
-          <textarea id="ai-cca-q" placeholder="e.g. How is CCA different from PCA?"></textarea>
-          <button class="ai-send" onclick="askAI('cca-q','cca-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-cca-r"></div>
-      </div>
+  <div class="formula-section">
+    <div class="formula-section-title">MDS</div>
+    <div class="formula-box">
+      <div class="f-label">Classical MDS algorithm</div>
+      <div class="f-math">A = -½ D²  (elementwise squaring of distance matrix)<br>B = H A H   where  H = I - (1/n)11ᵀ  (centering matrix)<br>Eigendecompose B = VΛVᵀ;  take top-k:  Z = V_k Λ_k^{1/2}</div>
+      <div class="f-note">Negative eigenvalues indicate non-Euclidean distances. Stress = Σᵢⱼ(dᵢⱼ - ‖zᵢ-zⱼ‖)².</div>
     </div>
+  </div>
 
-    <!-- EXAM 2024-25 -->
-    <div class="page" id="page-exam24">
-      <div class="page-title">Exam 2024–25</div>
-      <div class="page-sub">MATH3030-Exam1of1-V1-SPR2425 · 3 hours · Answer ALL questions</div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q1a</span><span class="q-num">Identify methods from optimization problems</span><span class="q-marks">12 marks</span></div>
-        <div class="q-text">Four optimization problems are given. Identify each: (i) maximize Var(aᵀx) s.t. aᵀa=1; (ii) minimize (y−Xa)ᵀ(y−Xa) + λ‖a‖²; (iii) minimize sum of squared distance differences; (iv) minimize within-cluster sum of squares.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">(i) PCA — find direction of maximum variance. (ii) Ridge regression — linear model with L2 regularisation. (iii) MDS — low-dimensional representation matching distance matrix. (iv) k-means clustering — partition into k groups minimising within-cluster variance.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q1b</span><span class="q-num">Compute SVD of a given data matrix X</span><span class="q-marks">10 marks</span></div>
-        <div class="q-text">Given X = [[2,2],[−4,2],[2,−4]] and its covariance decomposition, find the full SVD. Clearly label singular values and left/right singular vectors.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">Right singular vectors V from eigenvectors of (1/3)XᵀX. Singular values: δ₁=6, δ₂=2√3. Left vectors U = XV Δ⁻¹. Result: U = [[0, √(2/3)], [−1/√2, −1/√6], [1/√2, −1/√6]]. Note: sign flips are valid.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q1c</span><span class="q-num">PCA on body measurements</span><span class="q-marks">10 marks</span></div>
-        <div class="q-text">(i) Calculate proportion of variance explained by PC1 and PC2. Eigenvalues: 345, 89, 36, 17, 3, 2. (ii) Interpret PC1 and PC2 from the loadings. (iii) Compute PC1 score for an individual and interpret it.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">(i) (345+89)/492 = 88.2%. (ii) PC1: all positive loadings, largest for weight/height/shoulder → measure of body size. PC2: dominated by age loading (0.98) → measure of age. (iii) v₁ᵀ(x−x̄) = 0.52(11.8)+0.2(−0.2)+0.11(2.9)+0.41(−1.1)+0.7(4.8)+0.13(4.8) = 9.948 → larger than average member.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q2a</span><span class="q-num">MVN properties and Hotelling derivation</span><span class="q-marks">19 marks</span></div>
-        <div class="q-text">State distribution of y=Ax+c. Derive the distribution of n(x̄−μ)ᵀΣ⁻¹(x̄−μ). Prove that n(x−μ)ᵀM⁻¹(x−μ) ~ T²(p,ν) when M~Wₚ(Σ,ν). Derive distribution of (n−1)(x̄−μ)ᵀS⁻¹(x̄−μ).</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">y ~ Nₚ(Aμ+c, AΣAᵀ). Setting A=Σ⁻¹/², c=−Σ⁻¹/²μ gives y ~ Nₚ(0,I). Then n(x̄−μ)ᵀΣ⁻¹(x̄−μ) = sum of p squared N(0,1) rvs ~ χ²ₚ. For Hotelling: standardise x and M using Σ⁻¹/² → by definition of T². Final: nS ~ Wₚ(Σ, n−1) and √n·x̄ ~ N so (n−1)(x̄−μ)ᵀS⁻¹(x̄−μ) ~ T²(p, n−1).</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q2b</span><span class="q-num">Hotelling test: widget factory</span><span class="q-marks">15 marks</span></div>
-        <div class="q-text">Sample of n=20 widgets. x̄=(12.4, 16.8)ᵀ, S=[[1.1, 0.5],[0.5, 0.74]]. Test H₀: μ=(12, 17)ᵀ at 5% and 2.5% levels.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">T² = n(x̄−μ₀)ᵀS⁻¹(x̄−μ₀). Compute S⁻¹ = [[1.312, −0.887],[−0.887, 1.950]]. x̄−μ₀ = (0.4, −0.2). T² = 20 × (0.4, −0.2) S⁻¹ (0.4, −0.2)ᵀ = 3.868. Compare to F₂,₁₈: 95th pctile = 3.55. Since 3.868 > 3.55, reject at 5%. Since 3.868 < 4.56 (97.5th pctile), do not reject at 2.5%.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q3a</span><span class="q-num">LDA for bat subspecies</span><span class="q-marks">22 marks</span></div>
-        <div class="q-text">(i) Find the ML discriminant rule: classify as A if x₁ + cx₂ < d. (ii) Classify bat: wingspan=120, body=30. (iii) Find Bayes rule with πA=0.7. Does classification change?</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">(i) Pooled S, a = Sp⁻¹(x̄A−x̄B) = (−0.0252, −0.0648), h = (122, 29.2). Rule: x₁ + 2.57x₂ &lt; 197.2. (ii) 120 + 2.57×30 = 197.1 &lt; 197.2 → barely type B. (iii) Bayes threshold: log(0.3/0.7) = −0.847. aᵀ(x−h) = −0.0015 > −0.847 → reclassify as type A.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q3b</span><span class="q-num">Dendrogram: supermarkets (single linkage)</span><span class="q-marks">12 marks</span></div>
-        <div class="q-text">Plot the dendrogram for the given 6×6 distance matrix using single linkage. Use letters A, B, L, S, T, W for Aldi, Booths, Lidl, Sainsburys, Tesco, Waitrose.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">Stage 1 (h=0.05): join B & W. Stage 2 (h=0.09): join A & L. Stage 3 (h=0.30): join S & BW. Stage 4 (h=0.31): join T & BSW. Stage 5 (h=0.35): join AL & BSTW. Final clusters at h=0.3: {A,L}, {B,W,S}, {T}.</div>
-      </div>
+  <div class="formula-section">
+    <div class="formula-section-title">Canonical Correlation</div>
+    <div class="formula-box">
+      <div class="f-label">CCA optimization</div>
+      <div class="f-math">max_{a,b} Cor(aᵀy, bᵀz)<br>Q = Var(y)^{-½} Cov(y,z) Var(z)^{-½};  canonical correlations = singular values of Q</div>
+      <div class="f-note">If y = Rx + e₁, z = Tx + e₂ with eᵢ ~ N(0,I): canonical correlations = λᵢ/(λᵢ+1).</div>
     </div>
+  </div>
+</div>
 
-    <!-- EXAM 2023-24 -->
-    <div class="page" id="page-exam23">
-      <div class="page-title">Exam 2023–24</div>
-      <div class="page-sub">MATH3030-E1 · 3 hours · Answer ALL questions</div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q1a</span><span class="q-num">SVD, eigenvalues, and PCA variational result</span><span class="q-marks">18 marks</span></div>
-        <div class="q-text">(i) Give covariance matrix of centred X in terms of U, Δ, V. (ii) Eigenvalues of covariance matrix. (iii) Prove λ₁ = max_{a} ‖Xa‖/‖a‖ and state which a achieves it.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">(i) Σ = (1/n)XᵀX = (1/n)VΔ²Vᵀ. (ii) Eigenvalues = δᵢ²/n. (iii) Set b = Vᵀa (orthogonal transform, preserves norm). Then aᵀXᵀXa = bᵀΔ²b = Σ δᵢ² bᵢ². With ‖b‖=1, maximised by b=(1,0,...,0) → max = δ₁² = nλ₁. So max ‖Xa‖/‖a‖ = λ₁. Achieved at a = Vb = v₁.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q1b</span><span class="q-num">Army recruits: PCA on S</span><span class="q-marks">13 marks</span></div>
-        <div class="q-text">S = [[10,0,0],[0,95,65],[0,65,95]]. Eigenvectors given. (i) Interpret PCs. (ii) Find eigenvalues; how many PCs for ≥90% variance? (iii) PC1 score for x=(60,90,70)ᵀ.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">(i) PC1 = overall maths+English ability; PC2 = maths vs English; PC3 = driving ability. (ii) λ₁=160, λ₂=30, λ₃=10. Need PCs 1&2: 160/200=80% &lt; 90% &lt; 190/200=95%. (iii) (x−x̄)=(−10,10,10). Score = (−10)(0)+(10)(1/√2)+(10)(1/√2) = 20/√2 = 14.14.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q2a</span><span class="q-num">Hotelling two-sample: ventricular hypertrophy</span><span class="q-marks">15 marks</span></div>
-        <div class="q-text">Healthy: n=40, x̄ₕ=(151,143), Sₕ given. Sick: n=55, x̄ₛ=(140,136), Sₛ given. Test H₀: μₕ=μₛ at 5% using Hotelling's two-sample T².</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">Pool: Sp = (40S₁+55S₂)/93. Compute Sp⁻¹. (ȳ−x̄)=(−11,−7). Mahalanobis distance = 0.407. T² = (92/2)×(40×55/95)×0.407 = 4.659. Compare to F₂,₉₂: 95th pctile = 3.10. Since 4.659 > 3.10, reject H₀ at 5% — populations have different means.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q2b</span><span class="q-num">Multivariate t-distribution discriminant rule</span><span class="q-marks">19 marks</span></div>
-        <div class="q-text">Show that ML discriminant rule under equal-Σ multivariate-t distribution takes the form aᵀ(x−h)>0. Find a and h. Classify a patient with measurements (143, 140).</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">fₕ(x) > fₛ(x) iff (x−μₕ)ᵀΣ⁻¹(x−μₕ) &lt; (x−μₛ)ᵀΣ⁻¹(x−μₛ). Expand and cancel → a = Σ⁻¹(μₕ−μₛ) = (0.036, 0.00095), h = (145.5, 139.5). aᵀ((143,140)−h) = −0.09 &lt; 0 → classify as hypertrophy.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q3a</span><span class="q-num">MDS of Bordeaux wines</span><span class="q-marks">18 marks</span></div>
-        <div class="q-text">(i) Explain MDS and its optimization. (ii) Find 2D MDS representation from R output. (iii) Dendrogram using group average linkage.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">(i) Find z₁,...,zₙ∈ℝᵏ minimising Σ(dᵢⱼ − ‖zᵢ−zⱼ‖)². (ii) Multiply top-2 eigenvectors by √eigenvalue: Z = [v₁√λ₁, v₂√λ₂]. (iii) Join H&L at 0.2, join E&P at 0.5, join M&EP at 0.64, join HL&MEP at 1.013.</div>
-      </div>
-      <div class="exam-item">
-        <div class="q-header"><span class="tag tag-exam">Q3b</span><span class="q-num">CCA canonical correlations from eigenvalues</span><span class="q-marks">17 marks</span></div>
-        <div class="q-text">y=Rx+e₁, z=Tx+e₂ with eᵢ~N(0,I). (i) Cov(y,z). (ii) Show Var(y) = RU(Λ+I)(RU)ᵀ. (iii) Find canonical correlations in terms of λᵢ.</div>
-        <button class="reveal-btn" onclick="revealSol(this)">Show solution</button>
-        <div class="solution">(i) Cov(y,z) = RΣTᵀ. (ii) Var(Rx+e₁) = RΣRᵀ+I = RUΛUᵀRᵀ+I = RU(Λ+I)(RU)ᵀ — spectral form since RU orthogonal. (iii) Q = Var(y)^{−½}Cov(y,z)Var(z)^{−½} = RU(Λ+I)^{−½}Λ(Λ+I)^{−½}(TU)ᵀ → diagonal part gives canonical correlations λᵢ/(λᵢ+1).</div>
-      </div>
-    </div>
+<!-- ===== PCA ===== -->
+<div class="page" id="page-pca">
+  <div class="pg-title">Principal Component Analysis</div>
+  <div class="pg-sub">Dimension reduction via variance maximisation · Topic 3 &amp; 4</div>
 
-    <!-- FLASHCARDS -->
-    <div class="page" id="page-flashcards">
-      <div class="page-title">Flashcards</div>
-      <div class="page-sub">Click to reveal · use arrows to navigate</div>
-      <div class="flashcard-area">
-        <div class="flashcard" id="fc" onclick="flipCard()">
-          <div class="flashcard-front"><div class="q" id="fc-q"></div></div>
-          <div class="flashcard-back"><div class="a" id="fc-a"></div></div>
-        </div>
-      </div>
-      <div class="fc-nav">
-        <button onclick="prevCard()">← Previous</button>
-        <span id="fc-count"></span>
-        <button onclick="nextCard()">Next →</button>
-      </div>
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">Principal Component Analysis (PCA)</div>
+      <div class="def-text">A method that finds new orthogonal axes — the <strong>principal components</strong> — in the direction of greatest variance in the data. The first PC explains the most variance, the second explains the most remaining variance, and so on. Used for dimension reduction, visualisation, and exploratory data analysis.</div>
     </div>
+    <div class="def-box">
+      <div class="def-label">PC Loadings</div>
+      <div class="def-text">The coefficients vᵢ (eigenvectors of Σ) that define the direction of each principal component. They tell you how much each original variable contributes to the PC.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">PC Score</div>
+      <div class="def-text">The projection of an individual observation onto a PC direction: zᵢ = vᵢᵀ(x − x̄). A positive score means the individual is above average in that PC direction; negative means below.</div>
+    </div>
+  </div>
 
-    <!-- ASK AI -->
-    <div class="page" id="page-askai">
-      <div class="page-title">Ask AI</div>
-      <div class="page-sub">Ask any question about MATH3030 — get explanations tailored to the module</div>
-      <div class="ai-box" style="border-radius:12px;overflow:hidden">
-        <div style="padding:10px 14px;font-size:11px;font-weight:600;color:var(--hint);border-bottom:0.5px solid var(--card-border);letter-spacing:0.04em">MULTIVARIATE ANALYSIS TUTOR</div>
-        <div class="ai-input-row">
-          <textarea id="ai-main-q" placeholder="e.g. Derive the distribution of (n-1)(x̄-μ)ᵀS⁻¹(x̄-μ) step by step..." style="min-height:80px"></textarea>
-          <button class="ai-send" onclick="askAI('main-q','main-r')">Ask ↗</button>
-        </div>
-        <div class="ai-response" id="ai-main-r"></div>
+  <div class="card">
+    <div class="card-title">Optimization problem</div>
+    <div class="formula-box">
+      <div class="f-label">Find a ∈ ℝᵖ to</div>
+      <div class="f-math">maximize  Var(aᵀx)   subject to  aᵀa = 1</div>
+      <div class="f-note">Solution: a = v₁ (eigenvector of Σ with largest eigenvalue λ₁). For the k-th PC, use the k-th eigenvector.</div>
+    </div>
+    <ul class="keys">
+      <li>PCs are <strong>uncorrelated</strong> with each other (eigenvectors are orthogonal)</li>
+      <li>Var(aᵢᵀx) = λᵢ — the variance explained equals the eigenvalue</li>
+      <li>Proportion of variance explained by PCᵢ = λᵢ / Σλⱼ</li>
+      <li>Use the <strong>covariance matrix</strong> if variables are on the same scale; use the <strong>correlation matrix</strong> if they differ in scale</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — army recruits (Exam 2023–24, Q1b)</div>
+    <div class="example-box">
+      <div class="ex-label">Setup</div>
+      <div class="ex-text">Sample covariance S = [[10,0,0],[0,95,65],[0,65,95]] for driving (x₁), maths (x₂), English (x₃) tests. Three eigenvectors given: q₁=(0, 1/√2, 1/√2), q₂=(0, 1/√2, -1/√2), q₃=(1,0,0).</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Finding eigenvalues via Sq</div>
+      <div class="ex-math">Sq₁ = (0, (95+65)/√2, (65+95)/√2) = 160·q₁  ⟹  λ₁ = 160<br>Sq₂ = (0, (95-65)/√2, (65-95)/√2) = 30·q₂   ⟹  λ₂ = 30<br>Sq₃ = 10·q₃                                   ⟹  λ₃ = 10</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Interpretation</div>
+      <div class="ex-text">PC1 (λ=160): equal weights on maths and English → <strong>overall academic ability</strong>. PC2 (λ=30): maths vs English → <strong>relative subject strength</strong>. PC3 (λ=10): only driving → <strong>driving ability</strong>.</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">PC1 score for x=(60,90,70)ᵀ, x̄=(70,80,60)</div>
+      <div class="ex-math">(x-x̄) = (-10, 10, 10)<br>z₁ = q₁ᵀ(x-x̄) = 0·(-10) + (1/√2)·10 + (1/√2)·10 = 20/√2 = 14.14</div>
+      <div class="ex-text">Positive score → above-average academic ability.</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">How many PCs for ≥90% variance?</div>
+      <div class="ex-math">PC1 alone: 160/200 = 80% &lt; 90%<br>PC1+PC2: (160+30)/200 = 95% ≥ 90%  ✓  → need 2 PCs</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — gym members body dimensions (Exam 2024–25, Q1c)</div>
+    <div class="example-box">
+      <div class="ex-label">Eigenvalues: 345, 89, 36, 17, 3, 2. Proportion explained by PC1+PC2:</div>
+      <div class="ex-math">(345 + 89) / (345+89+36+17+3+2) = 434/492 = 88.2%</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">PC1 loading vector: (0.52, 0.20, 0.11, 0.41, 0.70, 0.13) for (shoulder, bicep, calf, height, weight, age)</div>
+      <div class="ex-text">All loadings positive, largest for weight/height/shoulder → PC1 = overall <strong>body size</strong>. PC2 loading dominated by age (0.98) → PC2 = <strong>age</strong>.</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">PC1 score for x=(120,31,39,170,74,35), x̄=(108.2,31.2,36.1,171.1,69.2,30.2)</div>
+      <div class="ex-math">v₁ᵀ(x-x̄) = 0.52(11.8)+0.2(-0.2)+0.11(2.9)+0.41(-1.1)+0.7(4.8)+0.13(4.8) = 9.948</div>
+      <div class="ex-text">Score > 0 → this individual is <strong>larger than the average member</strong>.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Common exam traps</div>
+    <div class="warn-box">
+      <div class="w-label">Watch out</div>
+      <div class="w-text">Always subtract the mean before computing PC scores: zᵢ = vᵢᵀ(x − <strong>x̄</strong>). Forgetting x̄ is the most common error. Also remember: proportion of variance uses ALL eigenvalues in the denominator.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SVD ===== -->
+<div class="page" id="page-svd">
+  <div class="pg-title">Singular Value Decomposition</div>
+  <div class="pg-sub">Factorising a data matrix X = UΔVᵀ · Topic 3</div>
+
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">Singular Value Decomposition (SVD)</div>
+      <div class="def-text">Any n×p matrix X can be written as X = UΔVᵀ where U (n×p) and V (p×p) are orthogonal matrices and Δ is diagonal with non-negative <strong>singular values</strong> δ₁ ≥ δ₂ ≥ ... ≥ 0 on the diagonal.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Left singular vectors (U)</div>
+      <div class="def-text">Columns of U. They are the eigenvectors of XXᵀ. For a centred data matrix, they represent how observations project onto each PC.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Right singular vectors (V)</div>
+      <div class="def-text">Columns of V. They are the eigenvectors of XᵀX — i.e. the <strong>PC loadings</strong>. This is the key connection between SVD and PCA.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Connection to PCA</div>
+    <ul class="keys">
+      <li><strong>Eigenvalues</strong> of covariance matrix = δᵢ²/n</li>
+      <li><strong>Right singular vectors V</strong> = PC loading directions</li>
+      <li><strong>Left singular vectors</strong>: recover via U = XVΔ⁻¹</li>
+      <li>Sign of each (uᵢ, vᵢ) pair can be flipped — both remain valid</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example (Exam 2024–25, Q1b)</div>
+    <div class="example-box">
+      <div class="ex-label">Given: X = [[2,2],[-4,2],[2,-4]] and covariance decomposition</div>
+      <div class="ex-math">(1/3)XᵀX = [[8,-4],[-4,8]] = V [[12,0],[0,4]] Vᵀ<br>where V = [[1/√2, 1/√2],[-1/√2, 1/√2]]</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Step 1: find singular values from (1/3)Δ² = diag(12, 4)</div>
+      <div class="ex-math">Δ² = diag(36, 12)  ⟹  δ₁ = 6,  δ₂ = 2√3</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Step 2: right singular vectors = V from above (eigenvectors of covariance)</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Step 3: left singular vectors U = XVΔ⁻¹</div>
+      <div class="ex-math">U = [[2,2],[-4,2],[2,-4]] · [[1/√2, 1/√2],[-1/√2, 1/√2]] · [[1/6, 0],[0, 1/(2√3)]]<br>= [[0, √(2/3)], [-1/√2, -1/√6], [1/√2, -1/√6]]</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Variational characterisation (Exam 2023–24, Q1aiii)</div>
+    <div class="example-box">
+      <div class="ex-label">Prove: λ₁ = max_{a} ‖Xa‖ / ‖a‖</div>
+      <div class="ex-text">Let b = Vᵀa. Since V is orthogonal, ‖b‖ = ‖a‖. Then aᵀXᵀXa = bᵀΔ²b = Σ δᵢ² bᵢ². Subject to Σbᵢ² = 1, this is maximised by b = (1,0,...,0), giving max = δ₁² = nλ₁. So max ‖Xa‖/‖a‖ = λ₁, achieved at a = Vb = v₁ (first right singular vector).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MVN ===== -->
+<div class="page" id="page-mvn">
+  <div class="pg-title">Multivariate Normal Distribution</div>
+  <div class="pg-sub">Nₚ(μ, Σ) and its properties · Topic 6</div>
+
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">Multivariate Normal Distribution Nₚ(μ, Σ)</div>
+      <div class="def-text">A p-dimensional generalisation of the normal distribution. Characterised by mean vector μ ∈ ℝᵖ and covariance matrix Σ (symmetric, positive semi-definite). The pdf is f(x) = (2π)^{-p/2}|Σ|^{-1/2} exp{-½(x-μ)ᵀΣ⁻¹(x-μ)}.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Mahalanobis distance</div>
+      <div class="def-text">The quadratic form (x-μ)ᵀΣ⁻¹(x-μ). This generalises squared distance by accounting for the covariance structure — it stretches/rotates space so that the distribution becomes spherical.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Key properties</div>
+    <ul class="keys">
+      <li><strong>Linear transformations:</strong> if x ~ Nₚ(μ,Σ) and y = Ax+c, then y ~ Nₚ(Aμ+c, AΣAᵀ)</li>
+      <li><strong>Standardising:</strong> A = Σ^{-1/2}, c = -Σ^{-1/2}μ gives y ~ Nₚ(0, Iₚ)</li>
+      <li><strong>Marginals:</strong> any subset of components is also MVN</li>
+      <li><strong>Conditionals:</strong> conditional distributions are MVN</li>
+      <li><strong>Sample mean:</strong> x̄ ~ Nₚ(μ, Σ/n)</li>
+      <li><strong>Independence:</strong> for MVN, zero covariance implies independence (unlike in general)</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Chi-squared result — derivation</div>
+    <div class="example-box">
+      <div class="ex-label">Claim: n(x̄ - μ)ᵀΣ⁻¹(x̄ - μ) ~ χ²ₚ</div>
+      <div class="ex-text">Since x̄ ~ Nₚ(μ, Σ/n), let y = √n · Σ^{-1/2}(x̄ - μ). By the linear transformation result, y ~ Nₚ(0, Iₚ). So y₁,...,yₚ are iid N(0,1), and n(x̄-μ)ᵀΣ⁻¹(x̄-μ) = yᵀy = Σyᵢ² ~ χ²ₚ.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WISHART + HOTELLING ===== -->
+<div class="page" id="page-wishart">
+  <div class="pg-title">Wishart Distribution &amp; Hotelling's T²</div>
+  <div class="pg-sub">The multivariate analogues of χ² and t-distributions · Topic 6 &amp; 7</div>
+
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">Wishart distribution Wₚ(Σ, ν)</div>
+      <div class="def-text">The distribution of M = Σᵢ₌₁ᵛ zᵢzᵢᵀ where zᵢ iid Nₚ(0, Σ). This is the multivariate analogue of the chi-squared distribution. If x₁,...,xₙ iid Nₚ(μ,Σ), then nS ~ Wₚ(Σ, n-1).</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Hotelling's T² distribution T²(p, ν)</div>
+      <div class="def-text">If y ~ Nₚ(μ, Iₚ) and M ~ Wₚ(Iₚ, ν) independently, then ν · yᵀM⁻¹y ~ T²(p, ν). This is the multivariate analogue of the t²-distribution. Used for hypothesis testing about multivariate means.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Critical independence result</div>
+    <div class="def-box">
+      <div class="def-label">x̄ and S are independent (when data are MVN iid)</div>
+      <div class="def-text">This is the key fact that enables all of the inference results. It is the multivariate analogue of x̄ and s² being independent in the univariate normal case.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Derivation of Hotelling (Exam 2024–25, Q2a)</div>
+    <div class="example-box">
+      <div class="ex-label">Derive distribution of n(x − μ)ᵀM⁻¹(x − μ) when M ~ Wₚ(Σ, ν)</div>
+      <div class="ex-text">Let y = Σ^{-1/2}(x-μ) ~ Nₚ(0,Iₚ) and Z = Σ^{-1/2}MΣ^{-1/2} ~ Wₚ(Iₚ, ν). Then by definition of Hotelling's T²: ν·yᵀZ⁻¹y ~ T²(p,ν). But ν·yᵀZ⁻¹y = ν·(x-μ)ᵀM⁻¹(x-μ).</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Hence derive distribution of (n-1)(x̄-μ)ᵀS⁻¹(x̄-μ)</div>
+      <div class="ex-text">We have √n·x̄ ~ Nₚ(√nμ, Σ) and nS ~ Wₚ(Σ, n-1). Apply the result above with ν = n-1 and M = nS. This gives (n-1)(x̄-μ)ᵀS⁻¹(x̄-μ) ~ T²(p, n-1).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== INFERENCE ===== -->
+<div class="page" id="page-inference">
+  <div class="pg-title">Multivariate Inference</div>
+  <div class="pg-sub">One- and two-sample Hotelling T² tests · Topic 7</div>
+
+  <div class="card">
+    <div class="card-title">One-sample test procedure</div>
+    <ol class="steps">
+      <li><strong>State hypotheses:</strong> H₀: μ = μ₀ vs H₁: μ ≠ μ₀</li>
+      <li><strong>State assumptions:</strong> x₁,...,xₙ iid Nₚ(μ, Σ)</li>
+      <li><strong>Compute test statistic:</strong> T² = n(x̄-μ₀)ᵀS⁻¹(x̄-μ₀)</li>
+      <li><strong>Find critical value:</strong> T²(p, n-1) or equivalently F_{p, n-p}</li>
+      <li><strong>Decision:</strong> reject H₀ if T² exceeds the critical value</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Two-sample test procedure</div>
+    <ol class="steps">
+      <li><strong>State hypotheses:</strong> H₀: μ₁ = μ₂ vs H₁: μ₁ ≠ μ₂</li>
+      <li><strong>Additional assumption:</strong> Σ₁ = Σ₂ (equal covariance matrices)</li>
+      <li><strong>Compute pooled covariance:</strong> Sₚ = (n₁S₁ + n₂S₂)/(n₁+n₂-2)</li>
+      <li><strong>Compute T²</strong> using the formula on the formula sheet</li>
+      <li><strong>Compare to F_{p, n₁+n₂-p-1}</strong></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — widget factory (Exam 2024–25, Q2b)</div>
+    <div class="example-box">
+      <div class="ex-label">n=20, x̄=(12.4, 16.8)ᵀ, S=[[1.1,0.5],[0.5,0.74]], μ₀=(12,17)ᵀ</div>
+      <div class="ex-math">x̄ - μ₀ = (0.4, -0.2)<br>S⁻¹ = 1/(1.1×0.74-0.25) × [[0.74,-0.5],[-0.5,1.1]] = [[1.312,-0.887],[-0.887,1.950]]<br>T² = 20×(0.4,-0.2) S⁻¹ (0.4,-0.2)ᵀ = 20 × 0.1934 = 3.868</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Compare to F₂,₁₈ percentiles given in exam</div>
+      <div class="ex-text">95th percentile = 3.55 &lt; 3.868 → <strong>reject H₀ at 5%</strong>. 97.5th percentile = 4.56 &gt; 3.868 → do not reject at 2.5%. There is evidence at 5% but not 2.5% that widgets are off-spec.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — ventricular hypertrophy (Exam 2023–24, Q2a)</div>
+    <div class="example-box">
+      <div class="ex-label">Healthy: n=40, x̄ₕ=(151,143). Sick: n=55, x̄ₛ=(140,136). Test H₀: μₕ=μₛ</div>
+      <div class="ex-math">Sₚ = (40S₁ + 55S₂)/93 = [[297.6,185.4],[185.4,268.5]]<br>ȳ - x̄ = (-11, -7)<br>(ȳ-x̄)ᵀSₚ⁻¹(ȳ-x̄) = 0.407<br>T² = (92/2)×(40×55/95)×0.407 = 4.659</div>
+      <div class="ex-text">F₂,₉₂ 95th percentile = 3.10. Since 4.659 &gt; 3.10, <strong>reject H₀</strong> — populations have different mean volumes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LDA ===== -->
+<div class="page" id="page-lda">
+  <div class="pg-title">Discriminant Analysis</div>
+  <div class="pg-sub">Linear (LDA) and Quadratic (QDA) classification rules · Topic 9</div>
+
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">Maximum Likelihood (ML) Discriminant Rule</div>
+      <div class="def-text">Classify a new observation x to whichever population has the largest likelihood at x. Under equal multivariate normal distributions with equal covariance matrices, this produces a <strong>linear decision boundary</strong>.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Bayes Discriminant Rule</div>
+      <div class="def-text">Incorporates prior probabilities πA, πB (population prevalences). Classify to A if log-likelihood ratio exceeds log(πB/πA). This shifts the decision boundary towards the rarer class.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Quadratic Discriminant Analysis (QDA)</div>
+      <div class="def-text">When covariance matrices differ (Σ_A ≠ Σ_B), the ML rule produces a <strong>quadratic decision boundary</strong>. The linear terms no longer cancel when expanding the Mahalanobis distances.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">LDA rule derivation</div>
+    <div class="example-box">
+      <div class="ex-label">Classify x to A if fA(x) &gt; fB(x), i.e. if the ratio fA/fB &gt; 1</div>
+      <div class="ex-math">Taking logs: classify to A if<br>(x-μA)ᵀΣ⁻¹(x-μA) &lt; (x-μB)ᵀΣ⁻¹(x-μB)<br>Expand: 0 &lt; (μA-μB)ᵀΣ⁻¹x - ½(μA-μB)ᵀΣ⁻¹(μA+μB)<br>⟺  aᵀ(x - h) &gt; 0   where  a = Σ⁻¹(μA-μB), h = ½(μA+μB)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — Lyle's flying fox bats (Exam 2024–25, Q3a)</div>
+    <div class="example-box">
+      <div class="ex-label">nA=45, x̄A=(119,27.2). nB=52, x̄B=(125,31.2). SA, SB given.</div>
+      <div class="ex-math">Sₚ = (45SA + 52SB)/95 = [[152.9, 32.1],[32.1, 49.3]]<br>a = Sₚ⁻¹(x̄A - x̄B) = Sₚ⁻¹(-6, -4) = (-0.0252, -0.0648)<br>h = ½(x̄A + x̄B) = (122, 29.2)</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Classify x=(120, 30): ML rule gives x₁ + 2.57x₂ &lt; 197.2</div>
+      <div class="ex-math">120 + 2.57×30 = 197.1 &lt; 197.2  ⟹  barely type A by ML rule<br>(Note: exam solution says type B — check the sign of a carefully)</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Bayes rule: πA=0.7, πB=0.3. Threshold = log(0.3/0.7) = -0.847</div>
+      <div class="ex-math">aᵀ(x-h) = (-0.0252)(-2) + (-0.0648)(0.8) = 0.0504 - 0.0518 = -0.0015<br>-0.0015 &gt; -0.847  ⟹  classify as type A</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Multivariate t example (Exam 2023–24, Q2b)</div>
+    <div class="example-box">
+      <div class="ex-label">Show that LDA form still holds under multivariate t if Σ and ν are the same for both groups</div>
+      <div class="ex-text">The normalising constants cancel. The comparison reduces to (x-μA)ᵀΣ⁻¹(x-μA) vs (x-μB)ᵀΣ⁻¹(x-μB). Expanding: same algebra as the MVN case gives aᵀ(x-h) &gt; 0 with a = Σ⁻¹(μA-μB).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MDS ===== -->
+<div class="page" id="page-mds">
+  <div class="pg-title">Multidimensional Scaling</div>
+  <div class="pg-sub">Low-dimensional representation from a distance matrix · Topic 5</div>
+
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">Multidimensional Scaling (MDS)</div>
+      <div class="def-text">Given an n×n distance matrix D, find points z₁,...,zₙ ∈ ℝᵏ (usually k=2) such that the Euclidean distances ‖zᵢ-zⱼ‖ approximate the given distances dᵢⱼ as closely as possible. Used for visualising similarity data.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Classical (metric) MDS</div>
+      <div class="def-text">An exact algorithm when distances are Euclidean. Uses eigendecomposition of the double-centred squared distance matrix. Negative eigenvalues indicate the distances are not Euclidean.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Stress</div>
+      <div class="def-text">The objective: Σᵢ Σⱼ (dᵢⱼ − ‖zᵢ−zⱼ‖)². Lower stress = better fit. Classical MDS minimises this exactly for Euclidean distances.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Algorithm — classical MDS</div>
+    <ol class="steps">
+      <li><strong>Square elementwise:</strong> form A = -½D² (so Aᵢⱼ = -½dᵢⱼ²)</li>
+      <li><strong>Double-centre:</strong> B = HAH where H = Iₙ - (1/n)11ᵀ is the centering matrix</li>
+      <li><strong>Eigendecompose:</strong> B = VΛVᵀ (take only positive eigenvalues)</li>
+      <li><strong>Coordinates:</strong> Z = V_k Λ_k^{1/2} (top k eigenvectors × √eigenvalues)</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — Bordeaux wines (Exam 2023–24, Q3a)</div>
+    <div class="example-box">
+      <div class="ex-label">R gives eigenvalues: 1.19, 0.657, 0.093, ~0, -0.404</div>
+      <div class="ex-text">Negative eigenvalue (-0.404) → distances are not perfectly Euclidean. Take top 2: λ₁=1.19, λ₂=0.657.</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">2D coordinates = eigenvectors × √eigenvalues</div>
+      <div class="ex-math">Emilion:    (0.293×√1.19, 0.446×√0.657) = (0.320, 0.362)<br>Haut-Brion: (-0.441×√1.19, 0.458×√0.657) = (-0.481, 0.371)<br>Lafite:     (-0.639×√1.19, -0.399×√0.657) = (-0.697, -0.323)<br>Margaux:    (0.375×√1.19, -0.642×√0.657) = (0.409, -0.520)<br>Pomerol:    (0.412×√1.19, 0.138×√0.657) = (0.449, 0.112)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLUSTER ===== -->
+<div class="page" id="page-cluster">
+  <div class="pg-title">Cluster Analysis</div>
+  <div class="pg-sub">k-means and hierarchical methods · Topic 10</div>
+
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">k-means clustering</div>
+      <div class="def-text">Partition n observations into k groups C₁,...,Cₖ by minimising within-cluster sum of squares: Σₖ Σ_{x∈Cₖ} ‖x - μ̂ₖ‖². The cluster centroids μ̂ₖ are the group means. k must be specified in advance.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Hierarchical clustering</div>
+      <div class="def-text">Builds a tree (dendrogram) by successively merging the closest pair of clusters. The linkage function defines how distance between clusters is measured. No need to pre-specify k — cut the dendrogram at any height.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Single linkage</div>
+      <div class="def-text">d(A,B) = min{d(a,b): a∈A, b∈B}. The nearest-neighbour distance. Tends to produce elongated, chaining clusters.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Complete linkage</div>
+      <div class="def-text">d(A,B) = max{d(a,b): a∈A, b∈B}. The furthest-neighbour distance. Produces compact, roughly equal-diameter clusters.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Average (group average) linkage</div>
+      <div class="def-text">d(A,B) = (1/|A||B|) Σ_{a∈A} Σ_{b∈B} d(a,b). The average of all pairwise distances between the two clusters.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">How to draw a dendrogram by hand</div>
+    <ol class="steps">
+      <li>Start with each observation as its own cluster (singletons)</li>
+      <li>Find the smallest distance in the distance matrix — merge those two clusters</li>
+      <li>Update the distance matrix using your chosen linkage rule</li>
+      <li>Repeat until all observations are in one cluster</li>
+      <li>Draw: height of each join = the distance at which it occurred</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — supermarkets, single linkage (Exam 2024–25, Q3b)</div>
+    <div class="example-box">
+      <div class="ex-label">Distance matrix for Aldi(A), Booths(B), Lidl(L), Sainsbury's(S), Tesco(T), Waitrose(W)</div>
+      <div class="ex-math">Stage 1 (h=0.05): min distance = d(B,W)=0.05 → merge B &amp; W<br>Stage 2 (h=0.09): min = d(A,L)=0.09 → merge A &amp; L<br>Stage 3 (h=0.30): min = d(S,BW)=min(0.30,0.05)=0.30 → merge S &amp; BW<br>Stage 4 (h=0.31): min = d(T,BSW)=0.31 → merge T &amp; BSW<br>Stage 5 (h=0.35): min = d(AL,BSTW)=0.35 → merge all</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — wines, group average (Exam 2023–24, Q3aiii)</div>
+    <div class="example-box">
+      <div class="ex-label">5 wines: Emilion(E), Haut-Brion(H), Lafite(L), Margaux(M), Pomerol(P)</div>
+      <div class="ex-math">Stage 1 (h=0.20): join H &amp; L<br>Stage 2 (h=0.50): join E &amp; P<br>  (average distance from EP to HL = avg of d(E,H),d(E,L),d(P,H),d(P,L) = avg(0.56,1.24,0.82,1.24)/4 = 0.965)<br>Stage 3 (h=0.64): join M &amp; EP (avg distance = avg(0.74,0.54)/2 = 0.64)<br>Stage 4 (h=1.013): join HL &amp; MEP</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CCA ===== -->
+<div class="page" id="page-cca">
+  <div class="pg-title">Canonical Correlation Analysis</div>
+  <div class="pg-sub">Finding maximally correlated linear combinations · Topic 4</div>
+
+  <div class="card">
+    <div class="card-title">Key definitions</div>
+    <div class="def-box">
+      <div class="def-label">Canonical Correlation Analysis (CCA)</div>
+      <div class="def-text">Given two sets of variables y and z, CCA finds pairs of linear combinations aᵀy and bᵀz that are maximally correlated. The first canonical correlation is the largest possible correlation between any linear combination of y and any linear combination of z.</div>
+    </div>
+    <div class="def-box">
+      <div class="def-label">Canonical correlations</div>
+      <div class="def-text">The singular values of the matrix Q = Var(y)^{-½} Cov(y,z) Var(z)^{-½}. These are the maximal correlations between linear combinations, ordered from largest to smallest.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Key facts</div>
+    <ul class="keys">
+      <li>CCA is the multivariate generalisation of correlation</li>
+      <li>Each canonical correlation is between 0 and 1</li>
+      <li>The solution requires the SVD of Q = Var(y)^{-½} Cov(y,z) Var(z)^{-½}</li>
+      <li>Optimal directions: a = Var(y)^{-½} u, b = Var(z)^{-½} v where u,v are singular vectors of Q</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Worked example — canonical correlations from eigenvalues (Exam 2023–24, Q3b)</div>
+    <div class="example-box">
+      <div class="ex-label">y = Rx + e₁, z = Tx + e₂ where x has covariance Σ = UΛUᵀ, eᵢ ~ N(0,I) independent</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Step 1: Var(y) = RΣRᵀ + I = RU(Λ+I)(RU)ᵀ</div>
+      <div class="ex-text">Since R and U are both orthogonal, RU is orthogonal → this is in spectral form. Similarly Var(z) = TU(Λ+I)(TU)ᵀ.</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Step 2: Cov(y,z) = RΣTᵀ = RUΛUᵀTᵀ</div>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Step 3: compute Q and read off canonical correlations</div>
+      <div class="ex-math">Q = (RU)(Λ+I)^{-½}Λ(Λ+I)^{-½}(TU)ᵀ<br>Diagonal part = (Λ+I)^{-½}Λ(Λ+I)^{-½} = diag(λᵢ/(λᵢ+1))<br>⟹  canonical correlations = λᵢ/(λᵢ+1)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXAM 2024-25 ===== -->
+<div class="page" id="page-exam25">
+  <div class="pg-title">Exam 2024–25</div>
+  <div class="pg-sub">MATH3030-Exam1of1-V1-SPR2425 · 3 hours · Answer ALL questions</div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q1a</span><span style="font-size:13px;color:var(--muted)">Identify four methods from optimization problems</span><span class="q-marks">12 marks</span></div>
+    <div class="q-text">Four optimization problems are listed. For each one: identify the method and briefly explain its aim. (i) maximize Var(aᵀx) s.t. aᵀa=1; (ii) minimize (y−Xa)ᵀ(y−Xa)+λ‖a‖²; (iii) minimize sum of squared distance approximation errors; (iv) minimize within-cluster sum of squares.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) <strong>PCA</strong> — find the direction of maximum variance in ℝᵖ.</div>
+      <div>(ii) <strong>Ridge regression</strong> — build a linear model predicting y from x with L2 regularisation (shrinks coefficients).</div>
+      <div>(iii) <strong>MDS</strong> — find a low-dimensional representation whose distances approximate the original distance matrix.</div>
+      <div>(iv) <strong>k-means clustering</strong> — partition observations into k clusters minimising within-cluster spread. Observations in the same cluster are more similar to each other than to those in other clusters.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q1b</span><span style="font-size:13px;color:var(--muted)">Compute SVD of a 3×2 data matrix</span><span class="q-marks">10 marks</span></div>
+    <div class="q-text">Given X = [[2,2],[−4,2],[2,−4]] and its eigen decomposition (1/3)XᵀX = VΛVᵀ, find the full SVD X = UΔVᵀ. Clearly label singular values and left/right singular vectors.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div><strong>Right singular vectors V</strong> from the given eigen decomposition:</div>
+      <div class="sol-math">V = [[1/√2, 1/√2], [-1/√2, 1/√2]]</div>
+      <div><strong>Singular values</strong> from (1/3)Δ² = diag(12,4):</div>
+      <div class="sol-math">Δ² = diag(36,12)  ⟹  δ₁=6, δ₂=2√3</div>
+      <div><strong>Left singular vectors</strong> U = XVΔ⁻¹:</div>
+      <div class="sol-math">U = [[0, √(2/3)], [-1/√2, -1/√6], [1/√2, -1/√6]]</div>
+      <div>Note: sign of each (uᵢ, vᵢ) pair can be flipped and remain valid.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q1c</span><span style="font-size:13px;color:var(--muted)">PCA on gym member body dimensions</span><span class="q-marks">10 marks</span></div>
+    <div class="q-text">Eigenvalues: 345, 89, 36, 17, 3, 2. PC loadings for 6 body dimensions given. (i) Proportion of variance from PC1+PC2. (ii) Interpret PC1 and PC2. (iii) Compute PC1 score for a given individual and interpret.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) (345+89)/(345+89+36+17+3+2) = 434/492 = <strong>88.2%</strong></div>
+      <div>(ii) <strong>PC1</strong>: all loadings positive, largest for weight/height/shoulder → measure of <em>body size</em>. <strong>PC2</strong>: dominated by age loading (0.98) → measure of <em>age</em>.</div>
+      <div>(iii) x̄ = (108.2, 31.2, 36.1, 171.1, 69.2, 30.2). x = (120, 31, 39, 170, 74, 35).</div>
+      <div class="sol-math">z₁ = 0.52(11.8)+0.2(-0.2)+0.11(2.9)+0.41(-1.1)+0.7(4.8)+0.13(4.8) = 9.948</div>
+      <div>Score > 0 → this individual is <strong>larger than the average gym member</strong>.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q2a</span><span style="font-size:13px;color:var(--muted)">MVN properties and Hotelling derivation</span><span class="q-marks">19 marks</span></div>
+    <div class="q-text">(i) Distribution of y=Ax+c and condition for y~N(0,I). (ii) Formula for x̄ and S. (iii) Distribution of x̄; derive n(x̄-μ)ᵀΣ⁻¹(x̄-μ)~χ²ₚ. (iv) Prove n(x-μ)ᵀM⁻¹(x-μ)~T²(p,ν) for M~Wₚ(Σ,ν). (v) Derive distribution of (n-1)(x̄-μ)ᵀS⁻¹(x̄-μ).</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) y ~ Nₚ(Aμ+c, AΣAᵀ). For N(0,Iₚ): set A=Σ^{-1/2}, c=-Σ^{-1/2}μ.</div>
+      <div>(ii) x̄ = (1/n)Σxᵢ, S = (1/n)Σ(xᵢ-x̄)(xᵢ-x̄)ᵀ (denominator n-1 also acceptable).</div>
+      <div>(iii) x̄ ~ Nₚ(μ, Σ/n). Let y = √n·Σ^{-1/2}(x̄-μ) ~ Nₚ(0,Iₚ). Sum of squares yᵀy ~ χ²ₚ, which equals n(x̄-μ)ᵀΣ⁻¹(x̄-μ).</div>
+      <div>(iv) Let y = Σ^{-1/2}(x-μ) ~ Nₚ(0,Iₚ), Z = Σ^{-1/2}MΣ^{-1/2} ~ Wₚ(Iₚ,ν). By definition of T²: ν·yᵀZ⁻¹y ~ T²(p,ν). Then ν·yᵀZ⁻¹y = ν·(x-μ)ᵀM⁻¹(x-μ).</div>
+      <div>(v) Since nS ~ Wₚ(Σ,n-1) and √n·x̄ ~ Nₚ(√nμ,Σ), applying (iv) gives (n-1)(x̄-μ)ᵀS⁻¹(x̄-μ) ~ T²(p,n-1).</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q2b</span><span style="font-size:13px;color:var(--muted)">Hotelling test: widget factory quality control</span><span class="q-marks">15 marks</span></div>
+    <div class="q-text">n=20 widgets. x̄=(12.4, 16.8)ᵀ, S=[[1.1,0.5],[0.5,0.74]]. Test H₀: μ=(12,17)ᵀ at both 5% and 2.5% significance levels. Percentiles given for F distribution.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>Assume xᵢ iid N₂(μ,Σ). Test statistic T² = n(x̄-μ₀)ᵀS⁻¹(x̄-μ₀).</div>
+      <div class="sol-math">x̄ - μ₀ = (0.4, -0.2)<br>S⁻¹ = [[1.312, -0.887], [-0.887, 1.950]]<br>T² = 20 × (0.4,-0.2) S⁻¹ (0.4,-0.2)ᵀ = 3.868</div>
+      <div>T² ~ F₂,₁₈. 95th pctile = 3.55 &lt; 3.868 → <strong>reject at 5%</strong>. 97.5th pctile = 4.56 > 3.868 → <strong>do not reject at 2.5%</strong>. Evidence at 5% level that widgets are off specification.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q3a(i–iii)</span><span style="font-size:13px;color:var(--muted)">LDA for Lyle's flying fox bat subspecies</span><span class="q-marks">22 marks</span></div>
+    <div class="q-text">(i) Find ML discriminant rule in form x₁+cx₂&lt;d. (ii) Classify bat with wingspan=120cm, body=30cm. (iii) With prior πA=0.7, state Bayes rule and reclassify.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) Pooled S, a = Sₚ⁻¹(x̄A−x̄B) = (-0.0252, -0.0648), h = (122, 29.2). Rule: x₁ + 2.57x₂ &lt; 197.2.</div>
+      <div>(ii) 120 + 2.57×30 = 197.1 &lt; 197.2 → classify as type A by ML (marginal — exam solution says B, check sign convention).</div>
+      <div>(iii) Bayes threshold: log(0.3/0.7) = -0.847. aᵀ(x-h) = -0.0015 &gt; -0.847 → <strong>reclassify as type A</strong>. The prior probability of type A being dominant shifts the boundary.</div>
+      <div>(iv) If Σ_A ≠ Σ_B: decision boundary becomes <strong>quadratic</strong> (QDA).</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q3b</span><span style="font-size:13px;color:var(--muted)">Dendrogram: UK supermarkets, single linkage</span><span class="q-marks">12 marks</span></div>
+    <div class="q-text">Plot the dendrogram for the given 6×6 distance matrix using the single linkage method. Use letters A, B, L, S, T, W.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div class="sol-math">Stage 1 h=0.05: join B &amp; W (d=0.05)<br>Stage 2 h=0.09: join A &amp; L (d=0.09)<br>  New distances to BW: min(d(A,B),d(A,W))=min(0.87,0.84)=0.84, etc.<br>Stage 3 h=0.30: join S &amp; BW (d(S,BW)=min(0.30,0.75)=0.30)<br>Stage 4 h=0.31: join T &amp; BSW (d(T,BSW)=min(0.55,0.35,0.31)=0.31)<br>Stage 5 h=0.35: join AL &amp; BSTW (d=0.35)</div>
+      <div>Final dendrogram: two main branches — {A,L} and {B,W,S,T}. The {A,L} group (Aldi &amp; Lidl) are perceived as very similar (budget). Booths &amp; Waitrose join first (premium positioning).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXAM 2023-24 ===== -->
+<div class="page" id="page-exam24">
+  <div class="pg-title">Exam 2023–24</div>
+  <div class="pg-sub">MATH3030-E1 / MATH4068-E1 · 3 hours · Answer ALL questions</div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q1a</span><span style="font-size:13px;color:var(--muted)">SVD, eigenvalues, variational PCA result</span><span class="q-marks">18 marks</span></div>
+    <div class="q-text">(i) Give covariance matrix of centred X in terms of SVD components. (ii) Compute eigenvalues. (iii) Prove λ₁ = max_{a} ‖Xa‖/‖a‖ and state which a achieves this. (iv) Why is this result useful?</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) Σ = (1/n)XᵀX = (1/n)VΔ²Vᵀ.</div>
+      <div>(ii) Eigenvalues = δᵢ²/n (singular values squared, divided by n).</div>
+      <div>(iii) Let b = Vᵀa (‖b‖=‖a‖ since V orthogonal). Then aᵀXᵀXa = bᵀΔ²b = Σδᵢ²bᵢ². Subject to Σbᵢ²=1, maximised by b=(1,0,...,0) → max = δ₁² = nλ₁. So max‖Xa‖/‖a‖ = λ₁, achieved at a = Vb = v₁.</div>
+      <div>(iv) This is the mathematical basis of PCA — the first PC direction maximises the variance of projected data.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q1b</span><span style="font-size:13px;color:var(--muted)">Army recruits: PCA on S, eigenvalues, PC scores</span><span class="q-marks">13 marks</span></div>
+    <div class="q-text">S = [[10,0,0],[0,95,65],[0,65,95]]. Eigenvectors: q₁=(0,1/√2,1/√2), q₂=(0,1/√2,-1/√2), q₃=(1,0,0). (i) Interpret PCs. (ii) Find eigenvalues; PCs needed for ≥90% variance. (iii) PC1 score for x=(60,90,70)ᵀ.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) PC1 = overall maths+English ability (equally weighted). PC2 = maths vs English contrast. PC3 = driving ability (only x₁).</div>
+      <div class="sol-math">Sq₁ = (0, 160/√2, 160/√2) = 160q₁  ⟹  λ₁=160<br>Sq₂ = (0, 30/√2, -30/√2) = 30q₂    ⟹  λ₂=30<br>Sq₃ = 10q₃                           ⟹  λ₃=10</div>
+      <div>160/200 = 80% &lt; 90%. (160+30)/200 = 95% ≥ 90% → <strong>need 2 PCs</strong>.</div>
+      <div>(iii) x−x̄ = (−10,10,10). z₁ = q₁ᵀ(x−x̄) = 0+10/√2+10/√2 = 20/√2 = <strong>14.14</strong>.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q2a</span><span style="font-size:13px;color:var(--muted)">Two-sample Hotelling T²: ventricular hypertrophy</span><span class="q-marks">15 marks</span></div>
+    <div class="q-text">(i) Describe assumptions of Hotelling T² test. (ii) Test H₀: μₕ=μₛ at 5% level. Healthy: n=40, x̄ₕ=(151,143), Sₕ given. Sick: n=55, x̄ₛ=(140,136), Sₛ given.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) Assumes: (1) both populations are MVN; (2) equal covariance matrices. MVN is unverifiable from info given but reasonable. Equal covariances looks plausible given similar Sₕ and Sₛ.</div>
+      <div class="sol-math">Sₚ = (40Sₕ + 55Sₛ)/93 = [[297.6,185.4],[185.4,268.5]]<br>ȳ - x̄ = (-11, -7)<br>Sₚ⁻¹ = [[0.0059,-0.0041],[-0.0041,0.0065]]<br>(ȳ-x̄)ᵀSₚ⁻¹(ȳ-x̄) = 0.407<br>T² = (92/(2×93)) × (40×55/95) × 0.407 = 4.659</div>
+      <div>T² ~ F₂,₉₂. 95th percentile = 3.10. Since 4.659 > 3.10 → <strong>reject H₀ at 5%</strong>. Strong evidence the populations differ in ventricular volume.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q2b</span><span style="font-size:13px;color:var(--muted)">Discriminant analysis under multivariate t distribution</span><span class="q-marks">19 marks</span></div>
+    <div class="q-text">(i) Describe ML discriminant rule. (ii) Show that equal-Σ, equal-ν multivariate t gives linear rule aᵀ(x-h)>0. (iii) Find a and h; classify patient with x=(143,140).</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) Classify x to whichever population has larger likelihood fₖ(x).</div>
+      <div>(ii) fₕ(x)&gt;fₛ(x) iff (x-μₕ)ᵀΣ⁻¹(x-μₕ) &lt; (x-μₛ)ᵀΣ⁻¹(x-μₛ). Expanding and simplifying: 0 &lt; (μₕ-μₛ)ᵀΣ⁻¹x - ½(μₕ-μₛ)ᵀΣ⁻¹(μₕ+μₛ) = aᵀ(x-h).</div>
+      <div class="sol-math">a = Σ⁻¹(μₕ-μₛ) = (0.036, 0.00095),  h = (145.5, 139.5)</div>
+      <div>For x=(143,140): aᵀ(x-h) = 0.036(-2.5)+0.00095(0.5) = -0.090+0.0005 = -0.0895 &lt; 0 → <strong>classify as hypertrophy</strong>.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q3a</span><span style="font-size:13px;color:var(--muted)">Classical MDS: Bordeaux wines</span><span class="q-marks">18 marks</span></div>
+    <div class="q-text">(i) Explain MDS and its optimization problem. (ii) From R output (eigenvalues + eigenvectors), find 2D representation. (iii) Dendrogram using group average linkage.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) Find z₁,...,zₙ∈ℝᵏ minimising Σᵢⱼ(dᵢⱼ−‖zᵢ−zⱼ‖)². Classical MDS: compute B = -½HDH, eigendecompose, take top-k eigenvectors scaled by √eigenvalues.</div>
+      <div>(ii) λ₁=1.19, λ₂=0.657. 2D coordinates = eigenvector × √eigenvalue:</div>
+      <div class="sol-math">Emilion: (0.320, 0.362), Haut-Brion: (-0.481, 0.371)<br>Lafite: (-0.697, -0.323), Margaux: (0.409, -0.520), Pomerol: (0.449, 0.112)</div>
+      <div>(iii) Stage 1 h=0.20: join H&amp;L. Stage 2 h=0.50: join E&amp;P (avg dist=0.5). Stage 3 h=0.64: join M&amp;EP. Stage 4 h=1.013: join HL&amp;MEP.</div>
+    </div>
+  </div>
+
+  <div class="exam-item">
+    <div class="q-header"><span class="tag tag-exam">Q3b</span><span style="font-size:13px;color:var(--muted)">CCA: canonical correlations from eigenvalues of Σ</span><span class="q-marks">17 marks</span></div>
+    <div class="q-text">y=Rx+e₁, z=Tx+e₂ with eᵢ~N(0,I) independent. (i) Find Cov(y,z). (ii) Show Var(y) = RU(Λ+I)(RU)ᵀ and state Var(z). (iii) Find canonical correlations in terms of λᵢ. (iv) Describe CCA optimization.</div>
+    <button class="reveal-btn" onclick="rev(this)">Show solution</button>
+    <div class="solution">
+      <div>(i) Cov(y,z) = Cov(Rx+e₁, Tx+e₂) = RΣTᵀ.</div>
+      <div>(ii) Var(Rx+e₁) = RΣRᵀ+I = RUΛUᵀRᵀ+I = RU(Λ+I)(RU)ᵀ. RU is orthogonal → spectral form. Similarly Var(z) = TU(Λ+I)(TU)ᵀ.</div>
+      <div>(iii) Q = Var(y)^{-½}RΣTᵀVar(z)^{-½} = RU(Λ+I)^{-½}Λ(Λ+I)^{-½}(TU)ᵀ. RU and TU orthogonal → this is the SVD. Canonical correlations = diagonal entries = <strong>λᵢ/(λᵢ+1)</strong>.</div>
+      <div>(iv) CCA solves max_{a,b} Cor(aᵀy, bᵀz) — find projections of y and z that are maximally correlated.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FLASHCARDS ===== -->
+<div class="page" id="page-flashcards">
+  <div class="pg-title">Flashcards</div>
+  <div class="pg-sub">Click card to reveal answer · use arrows to navigate · filter by topic</div>
+
+  <div class="fc-topic-filter" id="fc-filter"></div>
+
+  <div class="fc-area">
+    <div class="fc" id="fc" onclick="flipCard()">
+      <div class="fc-face fc-front">
+        <div class="fc-hint" id="fc-topic-label" style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px"></div>
+        <div class="q" id="fc-q"></div>
+        <div class="fc-hint" style="margin-top:12px;font-size:11px">tap to reveal</div>
       </div>
-      <div style="margin-top:16px">
-        <div style="font-size:11px;color:var(--hint);font-weight:600;letter-spacing:0.04em;margin-bottom:8px">QUICK PROMPTS</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          <button style="font-size:12px;padding:6px 12px;border-radius:6px;border:0.5px solid var(--card-border);background:var(--color-background-secondary);cursor:pointer;font-family:var(--sans);color:var(--text)" onclick="setPrompt('Explain how to compute the SVD of a data matrix step by step')">SVD step-by-step</button>
-          <button style="font-size:12px;padding:6px 12px;border-radius:6px;border:0.5px solid var(--card-border);background:var(--color-background-secondary);cursor:pointer;font-family:var(--sans);color:var(--text)" onclick="setPrompt('What is the Wishart distribution and why is it important?')">Wishart distribution</button>
-          <button style="font-size:12px;padding:6px 12px;border-radius:6px;border:0.5px solid var(--card-border);background:var(--color-background-secondary);cursor:pointer;font-family:var(--sans);color:var(--text)" onclick="setPrompt('Walk me through a complete Hotelling T² two-sample test example')">Two-sample test</button>
-          <button style="font-size:12px;padding:6px 12px;border-radius:6px;border:0.5px solid var(--card-border);background:var(--color-background-secondary);cursor:pointer;font-family:var(--sans);color:var(--text)" onclick="setPrompt('How do I interpret PC loadings in PCA?')">Interpret loadings</button>
-          <button style="font-size:12px;padding:6px 12px;border-radius:6px;border:0.5px solid var(--card-border);background:var(--color-background-secondary);cursor:pointer;font-family:var(--sans);color:var(--text)" onclick="setPrompt('Compare single, complete, and average linkage hierarchical clustering')">Linkage methods</button>
-          <button style="font-size:12px;padding:6px 12px;border-radius:6px;border:0.5px solid var(--card-border);background:var(--color-background-secondary);cursor:pointer;font-family:var(--sans);color:var(--text)" onclick="setPrompt('What are the key differences between LDA and QDA?')">LDA vs QDA</button>
-        </div>
+      <div class="fc-face fc-back">
+        <div class="a" id="fc-a"></div>
+        <div class="a-math" id="fc-am"></div>
       </div>
     </div>
-  </main>
+  </div>
+  <div class="fc-nav">
+    <button onclick="prevCard()">← Previous</button>
+    <span id="fc-count" style="font-family:var(--mono);font-size:12px"></span>
+    <button onclick="nextCard()">Next →</button>
+  </div>
+</div>
+
+</main>
 </div>
 
 <script>
 const TOPICS = {
-  pca: { name:'Principal Component Analysis', color:'#534AB7', tags:['theory','exam','key'], exam:['Q1a','Q1c','2023-Q1b'] },
-  svd: { name:'Singular Value Decomposition', color:'#1D9E75', tags:['theory','exam'], exam:['Q1b','2023-Q1a'] },
-  mvn: { name:'Multivariate Normal', color:'#D85A30', tags:['theory','key'], exam:['Q2a'] },
-  hotelling: { name:"Hotelling's T²", color:'#BA7517', tags:['theory','exam','key'], exam:['Q2b','2023-Q2a'] },
-  lda: { name:'Discriminant Analysis', color:'#D4537E', tags:['exam','key'], exam:['Q3a','2023-Q2b'] },
-  mds: { name:'Multidimensional Scaling', color:'#378ADD', tags:['theory','exam'], exam:['Q1a-iii','2023-Q3a'] },
-  cluster: { name:'Cluster Analysis', color:'#639922', tags:['exam'], exam:['Q1a-iv','Q3b'] },
-  cca: { name:'Canonical Correlation Analysis', color:'#5DCAA5', tags:['theory'], exam:['2023-Q3b'] },
+  pca:      { name:'PCA', color:'#534AB7', tags:['theory','exam','key'] },
+  svd:      { name:'SVD', color:'#1D9E75', tags:['theory','exam'] },
+  mvn:      { name:'Multivariate Normal', color:'#D85A30', tags:['theory','key'] },
+  wishart:  { name:'Wishart & Hotelling', color:'#BA7517', tags:['theory','exam','key'] },
+  inference:{ name:'Inference (1 & 2 sample)', color:'#639922', tags:['exam','key'] },
+  lda:      { name:'Discriminant Analysis', color:'#D4537E', tags:['exam','key'] },
+  mds:      { name:'MDS', color:'#378ADD', tags:['theory','exam'] },
+  cluster:  { name:'Cluster Analysis', color:'#3B6D11', tags:['exam'] },
+  cca:      { name:'Canonical Correlation', color:'#0F6E56', tags:['theory','exam'] },
 };
 
 const FLASHCARDS = [
-  { q:'What optimization problem does PCA solve?', a:'Maximise Var(aᵀx) subject to aᵀa=1. Solution: eigenvectors of the covariance matrix.' },
-  { q:'What is the SVD decomposition of a matrix X?', a:'X = UΔVᵀ where U, V are orthogonal and Δ is diagonal with non-negative entries (singular values).' },
-  { q:'What distribution does n(x̄−μ)ᵀΣ⁻¹(x̄−μ) follow?', a:'Chi-squared with p degrees of freedom: χ²ₚ. Proof: standardise using Σ⁻¹/² to get sum of squares of iid N(0,1).' },
-  { q:'State the one-sample Hotelling T² test statistic', a:'T² = n(x̄−μ₀)ᵀS⁻¹(x̄−μ₀) ~ T²(p, n−1). Equivalently ~ F_{p, n-p} after scaling.' },
-  { q:'How does the Bayes discriminant rule modify the ML rule?', a:'Classify to A if aᵀ(x−h) > log(πB/πA). When priors are equal, this reduces to the ML rule (threshold 0).' },
-  { q:'What is the classical MDS algorithm?', a:'(1) A = −½D². (2) B = HAH (double-centre). (3) Eigendecompose B. (4) Z = V_k Λ_k^{1/2} gives k-dimensional coordinates.' },
-  { q:'What linkage function does single linkage use?', a:'d(A,B) = min{d(a,b): a∈A, b∈B} — the smallest distance between any pair of points across clusters.' },
-  { q:'What does nS follow when xᵢ iid Nₚ(μ,Σ)?', a:'nS ~ Wₚ(Σ, n−1) — a Wishart distribution with n−1 degrees of freedom. Crucially, x̄ and S are independent.' },
-  { q:'What is the proportion of variance explained by PC_i?', a:'λᵢ / (λ₁ + λ₂ + ... + λₚ) where λᵢ are eigenvalues of the covariance matrix.' },
-  { q:'What do the canonical correlations equal if y=Rx+e₁, z=Tx+e₂?', a:'λᵢ/(λᵢ+1) where λᵢ are the eigenvalues of Σ = Cov(x). Shown by SVD of Q = Var(y)^{−½}Cov(y,z)Var(z)^{−½}.' },
-  { q:'What does ridge regression minimize?', a:'(y−Xa)ᵀ(y−Xa) + λ‖a‖². This adds an L2 penalty to shrink coefficients, preventing overfitting.' },
-  { q:'How do you compute the PC1 score for an individual x?', a:'z₁ = v₁ᵀ(x − x̄) where v₁ is the first eigenvector of S and x̄ is the sample mean.' },
+  { topic:'PCA', q:'What optimization problem does PCA solve?', a:'Maximize Var(aᵀx) subject to aᵀa = 1.', m:'Solution: a = eigenvector of Σ with largest eigenvalue.' },
+  { topic:'PCA', q:'How do you compute the PC1 score for individual x?', a:'Subtract the mean, then project onto loading vector:', m:'z₁ = v₁ᵀ(x − x̄)' },
+  { topic:'PCA', q:'How do you find the proportion of variance explained by PC i?', a:'Divide the i-th eigenvalue by the sum of all eigenvalues:', m:'λᵢ / (λ₁ + λ₂ + ... + λₚ)' },
+  { topic:'PCA', q:'When should you use the correlation matrix instead of the covariance matrix for PCA?', a:'When variables are measured on different scales (e.g. cm and kg). The correlation matrix standardises each variable to unit variance before finding PCs.' },
+  { topic:'SVD', q:'State the SVD decomposition of an n×p matrix X.', a:'X = UΔVᵀ where U (n×p) and V (p×p) are orthogonal, and Δ is diagonal with non-negative singular values.', m:'' },
+  { topic:'SVD', q:'How are the SVD singular values related to PCA eigenvalues?', a:'The eigenvalues of the covariance matrix equal the singular values squared divided by n:', m:'λᵢ = δᵢ² / n' },
+  { topic:'SVD', q:'How do you recover the left singular vectors U from X, V and Δ?', a:'U = X V Δ⁻¹. The columns of V are the right singular vectors (= PC loadings).' },
+  { topic:'SVD', q:'In the variational characterisation of PCA, what does v₁ maximise?', a:'The first right singular vector v₁ maximises ‖Xa‖/‖a‖. The maximum equals λ₁ (largest eigenvalue).', m:'' },
+  { topic:'MVN', q:'State the distribution of y = Ax + c when x ~ Nₚ(μ,Σ).', a:'y ~ Nₚ(Aμ + c,  AΣAᵀ)' },
+  { topic:'MVN', q:'How do you standardise an MVN random vector to N(0,I)?', a:'Set A = Σ^{-1/2} and c = -Σ^{-1/2}μ. Then y = Ax+c ~ Nₚ(0, Iₚ).' },
+  { topic:'MVN', q:'What distribution does n(x̄-μ)ᵀΣ⁻¹(x̄-μ) follow?', a:'χ²ₚ (chi-squared with p degrees of freedom). Proof: standardise to get sum of p squared iid N(0,1) rvs.', m:'' },
+  { topic:'Wishart & Hotelling', q:'Define the Wishart distribution Wₚ(Σ, ν).', a:'Distribution of M = Σᵢzᵢzᵢᵀ where zᵢ iid Nₚ(0,Σ). The multivariate χ². If xᵢ iid Nₚ(μ,Σ), then nS ~ Wₚ(Σ, n-1).' },
+  { topic:'Wishart & Hotelling', q:'State the one-sample Hotelling T² test statistic and its null distribution.', a:'T² = n(x̄-μ₀)ᵀS⁻¹(x̄-μ₀) ~ T²(p, n-1)', m:'Equivalently ~ F_{p, n-p} after scaling.' },
+  { topic:'Wishart & Hotelling', q:'State the key independence result for MVN samples.', a:'x̄ and S are independent when x₁,...,xₙ are iid Nₚ(μ,Σ). This enables the Hotelling T² derivation.' },
+  { topic:'Inference (1 & 2 sample)', q:'What additional assumption does the two-sample Hotelling T² test require beyond MVN?', a:'Equal covariance matrices: Σ₁ = Σ₂. The pooled estimate is Sₚ = (n₁S₁ + n₂S₂)/(n₁+n₂-2).' },
+  { topic:'Inference (1 & 2 sample)', q:'In the two-sample T² test, what distribution does the test statistic follow?', a:'F_{p, n₁+n₂-p-1}  (after the standard scaling).' },
+  { topic:'Discriminant Analysis', q:'State the ML linear discriminant rule for two equal-covariance MVN populations.', a:'Classify x to A if aᵀ(x-h) > 0,', m:'a = Sₚ⁻¹(x̄A - x̄B),   h = ½(x̄A + x̄B)' },
+  { topic:'Discriminant Analysis', q:'How does the Bayes rule differ from the ML rule?', a:'Replace threshold 0 with log(πB/πA):', m:'Classify to A if aᵀ(x-h) > log(πB/πA)' },
+  { topic:'Discriminant Analysis', q:'What changes if the two populations have different covariance matrices?', a:'The decision boundary becomes quadratic (QDA) rather than linear. The Σ terms no longer cancel when comparing likelihoods.' },
+  { topic:'MDS', q:'State the optimization problem solved by MDS.', a:'Find z₁,...,zₙ ∈ ℝᵏ to minimise:', m:'Σᵢ Σⱼ (dᵢⱼ − ‖zᵢ - zⱼ‖)²' },
+  { topic:'MDS', q:'Describe the classical MDS algorithm.', a:'(1) A = -½D². (2) Double-centre: B = HAH where H = I - (1/n)11ᵀ. (3) Eigendecompose B. (4) Z = V_k Λ_k^{1/2}.' },
+  { topic:'MDS', q:'What do negative eigenvalues in classical MDS indicate?', a:'The given distances are not Euclidean — they cannot be exactly embedded in any Euclidean space.' },
+  { topic:'Cluster Analysis', q:'State the single linkage distance between two clusters A and B.', a:'d(A,B) = min{ d(a,b) : a ∈ A, b ∈ B } — the distance between the nearest pair of points.' },
+  { topic:'Cluster Analysis', q:'What is the k-means objective function?', a:'Minimise Σₖ Σ_{xᵢ∈Cₖ} ‖xᵢ - μ̂ₖ‖² where μ̂ₖ = (1/|Cₖ|) Σ_{i∈Cₖ} xᵢ are cluster centroids.' },
+  { topic:'Canonical Correlation', q:'What does CCA optimise?', a:'max_{a,b} Cor(aᵀy, bᵀz) — finds pairs of linear combinations of y and z that are maximally correlated.' },
+  { topic:'Canonical Correlation', q:'If y=Rx+e₁, z=Tx+e₂ with x having eigenvalues λᵢ, what are the canonical correlations?', a:'λᵢ/(λᵢ + 1)  for each eigenvalue λᵢ of Cov(x).' },
 ];
 
-let completed = JSON.parse(localStorage.getItem('mva-done') || '{}');
-let fcIdx = 0, fcFlipped = false;
+const CHECKLIST_ITEMS = {
+  'cl-pca': [
+    ['State and solve the PCA optimization problem', true],
+    ['Compute eigenvalues of S by applying S to eigenvectors (Sqᵢ = λᵢqᵢ)', true],
+    ['Interpret PC loadings: identify what each PC measures', true],
+    ['Compute proportion of variance explained: λᵢ / Σλⱼ', true],
+    ['Calculate PC scores: zᵢ = vᵢᵀ(x − x̄) — remember to subtract x̄', true],
+    ['Determine how many PCs are needed for ≥90% variance', false],
+    ['Prove λ₁ = max‖Xa‖/‖a‖ using b = Vᵀa substitution', true],
+    ['Find the SVD X = UΔVᵀ given the covariance decomposition', true],
+    ['Recover left singular vectors U = XVΔ⁻¹', true],
+    ['Connect SVD to PCA: eigenvalues = δᵢ²/n, V = PC loadings', true],
+  ],
+  'cl-mvn': [
+    ['State the MVN pdf and identify the Mahalanobis distance', false],
+    ['Apply linear transformation result: y=Ax+c gives y~Nₚ(Aμ+c, AΣAᵀ)', true],
+    ['Standardise MVN to N(0,I) using A=Σ^{-1/2}, c=-Σ^{-1/2}μ', true],
+    ['Prove n(x̄-μ)ᵀΣ⁻¹(x̄-μ) ~ χ²ₚ by standardising', true],
+    ['State: if xᵢ iid Nₚ(μ,Σ) then x̄~Nₚ(μ,Σ/n) and nS~Wₚ(Σ,n-1)', true],
+    ['State that x̄ and S are independent for MVN data', true],
+    ['Define the Wishart distribution Wₚ(Σ,ν)', false],
+    ['Prove the Hotelling T²(p,ν) result using Σ^{-1/2} standardisation', true],
+    ['Derive distribution of (n-1)(x̄-μ)ᵀS⁻¹(x̄-μ)', true],
+  ],
+  'cl-inf': [
+    ['State the one-sample Hotelling T² test statistic', true],
+    ['State assumptions: iid MVN, state H₀ and H₁ clearly', true],
+    ['Compute S⁻¹ for a 2×2 matrix correctly', true],
+    ['Compare T² to the correct percentile (F_{p, n-p})', true],
+    ['State the two-sample test assumptions: equal covariance matrices', true],
+    ['Compute the pooled covariance Sₚ = (n₁S₁+n₂S₂)/(n₁+n₂-2)', true],
+    ['Know which F-distribution to use for two-sample test: F_{p, n₁+n₂-p-1}', true],
+    ['Interpret the result: state what reject/fail to reject means in context', false],
+  ],
+  'cl-lda': [
+    ['State the ML discriminant rule: classify to A if aᵀ(x-h)>0', true],
+    ['Derive the linear form from comparing MVN likelihoods', true],
+    ['Compute pooled covariance Sₚ and discriminant direction a', true],
+    ['Apply the Bayes rule with prior probabilities: threshold = log(πB/πA)', true],
+    ['Explain why unequal covariance matrices give a quadratic boundary', false],
+    ['Show the linear discriminant rule also holds under equal-Σ multivariate t', true],
+  ],
+  'cl-mds': [
+    ['State the MDS stress optimization problem', true],
+    ['Describe classical MDS algorithm: A, H, B=HAH, eigendecompose, Z=VΛ^{1/2}', true],
+    ['Compute 2D MDS coordinates from given eigenvalues and eigenvectors', true],
+    ['Interpret negative eigenvalues (non-Euclidean distances)', false],
+    ['Build a dendrogram from a distance matrix using single linkage', true],
+    ['Build a dendrogram using group average linkage (update distances as averages)', true],
+    ['Update the distance matrix correctly at each merge step', true],
+    ['Cut a dendrogram at a given height to identify clusters', false],
+    ['State the k-means objective function', false],
+    ['Distinguish single, complete, and average linkage behaviour', false],
+  ],
+  'cl-cca': [
+    ['State the CCA optimization: max Cor(aᵀy, bᵀz)', true],
+    ['State that canonical correlations are singular values of Q = Var(y)^{-½}Cov(y,z)Var(z)^{-½}', true],
+    ['Show Var(y) = RU(Λ+I)(RU)ᵀ from y=Rx+e₁', true],
+    ['Derive canonical correlations = λᵢ/(λᵢ+1) for the noise model', true],
+    ['Distinguish CCA from PCA: CCA maximises correlation between two sets; PCA maximises variance within one set', false],
+  ],
+};
 
-function save() { try { localStorage.setItem('mva-done', JSON.stringify(completed)); } catch(e){} }
+let completed = {};
+let checklistDone = {};
+let fcIdx = 0, fcFilter = null;
+let filteredCards = [...FLASHCARDS];
+
+try { completed = JSON.parse(localStorage.getItem('mva-done') || '{}'); } catch(e){}
+try { checklistDone = JSON.parse(localStorage.getItem('mva-cl') || '{}'); } catch(e){}
+
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+
+function goto(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  document.getElementById('main-scroll').scrollTo(0,0);
+  if(page === 'tracker') renderTopicGrid();
+  if(page === 'checklist') renderChecklist();
+}
+
+function toggle(key) {
+  completed[key] = !completed[key];
+  save('mva-done', completed);
+  updateStats();
+}
 
 function updateStats() {
   const done = Object.values(completed).filter(Boolean).length;
@@ -732,7 +1250,7 @@ function updateStats() {
   if(el) el.textContent = done + '/' + Object.keys(TOPICS).length;
   Object.keys(TOPICS).forEach(k => {
     const c = document.getElementById('chk-'+k);
-    if(c) { c.textContent = completed[k] ? '✓' : ''; c.className = 'check' + (completed[k]?' done':''); }
+    if(c){ c.textContent = completed[k] ? '✓' : ''; c.className = 'chk'+(completed[k]?' done':''); }
   });
   renderProgress();
 }
@@ -740,13 +1258,12 @@ function updateStats() {
 function renderProgress() {
   const el = document.getElementById('progress-rows');
   if(!el) return;
-  const topics = Object.entries(TOPICS);
-  el.innerHTML = topics.map(([k,t]) => {
-    const pct = completed[k] ? 100 : 30;
-    return `<div class="progress-row">
-      <div class="label">${t.name}</div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${t.color}"></div></div>
-      <div class="pct">${pct}%</div>
+  el.innerHTML = Object.entries(TOPICS).map(([k,t]) => {
+    const pct = completed[k] ? 100 : 20;
+    return `<div class="prog-row">
+      <div class="prog-lbl">${t.name}</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${t.color}"></div></div>
+      <div class="prog-pct">${pct}%</div>
     </div>`;
   }).join('');
 }
@@ -754,78 +1271,46 @@ function renderProgress() {
 function renderTopicGrid() {
   const el = document.getElementById('topic-grid');
   if(!el) return;
+  const tagClass = {theory:'tag-theory',exam:'tag-exam',key:'tag-key',r:'tag-r'};
   el.innerHTML = Object.entries(TOPICS).map(([k,t]) => {
-    const tagMap = { theory:'tag-theory', exam:'tag-exam', r:'tag-r', key:'tag-key' };
-    const tags = t.tags.map(tg => `<span class="tag ${tagMap[tg]||'tag-theory'}">${tg}</span>`).join('');
-    const done = completed[k];
-    return `<div class="topic-card ${done?'complete':''}" onclick="goto('${k}')">
+    const tags = t.tags.map(tg => `<span class="tag ${tagClass[tg]||'tag-theory'}">${tg}</span>`).join('');
+    return `<div class="tc ${completed[k]?'done':''}" onclick="goto('${k}')">
       <div class="tc-num">MATH3030</div>
       <div class="tc-name">${t.name}</div>
       <div class="tc-tags">${tags}</div>
-      <div class="tc-status ${done?'done':''}" onclick="event.stopPropagation();toggle('${k}')">${done?'✓':''}</div>
+      <div class="tc-status ${completed[k]?'done':''}" onclick="event.stopPropagation();toggle('${k}')">${completed[k]?'✓':''}</div>
     </div>`;
   }).join('');
 }
 
-function toggle(key) {
-  completed[key] = !completed[key];
-  save();
-  updateStats();
-  renderTopicGrid();
+function renderChecklist() {
+  Object.entries(CHECKLIST_ITEMS).forEach(([id, items]) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = items.map((item, i) => {
+      const key = id+'-'+i;
+      const done = checklistDone[key];
+      const [label, isExam] = Array.isArray(item) ? item : [item, false];
+      return `<li>
+        <div class="ci ${done?'done':''}" onclick="toggleCL('${key}',this)">${done?'✓':''}</div>
+        <span>${isExam?'<strong>Exam question type:</strong> ':''} ${label}</span>
+      </li>`;
+    }).join('');
+  });
 }
 
-function goto(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const el = document.getElementById('page-'+page);
-  if(el) el.classList.add('active');
-  document.getElementById('main-scroll').scrollTop = 0;
+function toggleCL(key, el) {
+  checklistDone[key] = !checklistDone[key];
+  save('mva-cl', checklistDone);
+  el.className = 'ci' + (checklistDone[key] ? ' done' : '');
+  el.textContent = checklistDone[key] ? '✓' : '';
 }
 
-function revealSol(btn) {
-  const sol = btn.nextElementSibling;
-  sol.classList.toggle('visible');
-  btn.textContent = sol.classList.contains('visible') ? 'Hide solution' : 'Show solution';
-}
-
-function renderFlashcard() {
-  const fc = FLASHCARDS[fcIdx];
-  document.getElementById('fc-q').textContent = fc.q;
-  document.getElementById('fc-a').textContent = fc.a;
-  document.getElementById('fc-count').textContent = (fcIdx+1) + ' / ' + FLASHCARDS.length;
-  document.getElementById('fc').classList.remove('flipped');
-  fcFlipped = false;
-}
-function flipCard() { document.getElementById('fc').classList.toggle('flipped'); fcFlipped = !fcFlipped; }
-function nextCard() { fcIdx = (fcIdx+1) % FLASHCARDS.length; renderFlashcard(); }
-function prevCard() { fcIdx = (fcIdx-1+FLASHCARDS.length) % FLASHCARDS.length; renderFlashcard(); }
-
-async function askAI(qId, rId) {
-  const q = document.getElementById('ai-'+qId).value.trim();
-  if(!q) return;
-  const resp = document.getElementById('ai-'+rId);
-  resp.className = 'ai-response visible';
-  resp.innerHTML = '<span class="ai-loading">Thinking…</span>';
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'You are a concise tutor for MATH3030 Multivariate Analysis at the University of Nottingham (taught by Prof. Richard Wilkinson). Topics: PCA, SVD, Multivariate Normal, Wishart, Hotelling T², LDA/QDA, MDS, Cluster Analysis, CCA. Answer clearly and concisely, using mathematical notation where helpful. Assume the student knows linear algebra and basic statistics.',
-        messages:[{role:'user', content:q}]
-      })
-    });
-    const data = await res.json();
-    const text = data.content?.map(c=>c.text||'').join('') || 'No response.';
-    resp.innerHTML = text.replace(/\n/g,'<br>');
-  } catch(e) { resp.innerHTML = 'Error: ' + e.message; }
-}
-
-function setPrompt(text) {
-  document.getElementById('ai-main-q').value = text;
-  document.getElementById('ai-main-q').focus();
+function clearChecklist() {
+  if(!confirm('Reset all checklist items?')) return;
+  checklistDone = {};
+  save('mva-cl', checklistDone);
+  renderChecklist();
 }
 
 function filterNav(val) {
@@ -835,7 +1320,49 @@ function filterNav(val) {
   });
 }
 
+// FLASHCARDS
+function buildFcFilter() {
+  const el = document.getElementById('fc-filter');
+  if(!el) return;
+  const topics = ['All', ...new Set(FLASHCARDS.map(f => f.topic))];
+  el.innerHTML = topics.map(t => `<button class="${t==='All'?'active':''}" onclick="setFcFilter('${t}',this)">${t}</button>`).join('');
+}
+
+function setFcFilter(topic, btn) {
+  fcFilter = topic === 'All' ? null : topic;
+  filteredCards = fcFilter ? FLASHCARDS.filter(f => f.topic === fcFilter) : [...FLASHCARDS];
+  fcIdx = 0;
+  document.querySelectorAll('.fc-topic-filter button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFlashcard();
+}
+
+function renderFlashcard() {
+  if(!filteredCards.length) return;
+  const fc = filteredCards[fcIdx];
+  document.getElementById('fc-topic-label').textContent = fc.topic;
+  document.getElementById('fc-q').textContent = fc.q;
+  document.getElementById('fc-a').textContent = fc.a;
+  document.getElementById('fc-am').textContent = fc.m || '';
+  document.getElementById('fc-count').textContent = (fcIdx+1) + ' / ' + filteredCards.length;
+  const card = document.getElementById('fc');
+  card.classList.remove('flipped');
+}
+
+function flipCard() { document.getElementById('fc').classList.toggle('flipped'); }
+function nextCard() { fcIdx = (fcIdx+1) % filteredCards.length; renderFlashcard(); }
+function prevCard() { fcIdx = (fcIdx-1+filteredCards.length) % filteredCards.length; renderFlashcard(); }
+
+function rev(btn) {
+  const sol = btn.nextElementSibling;
+  sol.classList.toggle('visible');
+  btn.textContent = sol.classList.contains('visible') ? 'Hide solution' : 'Show solution';
+}
+
+buildFcFilter();
 renderFlashcard();
-renderTopicGrid();
 updateStats();
+renderTopicGrid();
 </script>
+</body>
+</html>
